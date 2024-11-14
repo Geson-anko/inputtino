@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <climits>
 #include <cmath>
 #include <endian.h>
 #include <filesystem>
@@ -360,12 +361,12 @@ void PS5Joypad::set_on_rumble(const std::function<void(int, int)> &callback) {
   this->_state->on_rumble = callback;
 }
 
+/**
+ * For a rationale behind this, see: https://github.com/LizardByte/Sunshine/issues/3247#issuecomment-2428065349
+ */
 static __le16 to_le_signed(float original, float value) {
-  auto le = htole16(value);
-  if (original < 0) { // adjust sign bit
-    le |= (1 << 15);  // set the last bit (bit 15) to 1
-  }
-  return le;
+  value = std::clamp(value, static_cast<float>(SHRT_MIN), static_cast<float>(SHRT_MAX));
+  return htole16(value);
 }
 
 void PS5Joypad::set_motion(PS5Joypad::MOTION_TYPE type, float x, float y, float z) {
