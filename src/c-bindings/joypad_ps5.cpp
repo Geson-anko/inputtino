@@ -84,7 +84,7 @@ void inputtino_joypad_ps5_set_battery(InputtinoPS5Joypad *joypad,
   }
 }
 
-void inputtino_joypad_ps5_set_led(InputtinoPS5Joypad *joypad, InputtinoJoypadLEDFn led_fn, void *user_data) {
+void inputtino_joypad_ps5_set_on_led(InputtinoPS5Joypad *joypad, InputtinoJoypadLEDFn led_fn, void *user_data) {
   if (joypad) {
     reinterpret_cast<inputtino::PS5Joypad *>(joypad)->set_on_led(
         [user_data, led_fn](unsigned char r, unsigned char g, unsigned char b) { led_fn(r, g, b, user_data); });

@@ -303,7 +303,7 @@ inputtino_joypad_ps5_set_battery(InputtinoPS5Joypad *joypad, enum BATTERY_STATE 
 
 typedef void (*InputtinoJoypadLEDFn)(int r, int g, int b, void *user_data);
 
-LIBINPUTTINO_EXPORT void inputtino_joypad_ps5_set_led(InputtinoPS5Joypad *joypad, InputtinoJoypadLEDFn led_fn, void *user_data);
+LIBINPUTTINO_EXPORT void inputtino_joypad_ps5_set_on_led(InputtinoPS5Joypad *joypad, InputtinoJoypadLEDFn led_fn, void *user_data);
 
 LIBINPUTTINO_EXPORT void inputtino_joypad_ps5_destroy(InputtinoPS5Joypad *joypad);
 
