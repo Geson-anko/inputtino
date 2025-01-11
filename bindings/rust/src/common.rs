@@ -59,15 +59,15 @@ macro_rules! get_nodes {
 macro_rules! make_device {
     ($fn_call:expr, $device:expr) => {
         {
-            let error_str = std::ptr::null_mut();
+            let mut error_str = std::ffi::CString::new("").unwrap();
             let error_handler = crate::c_bindings::InputtinoErrorHandler {
                 eh: Some(error_handler_fn),
-                user_data: error_str,
+                user_data: &mut error_str as *mut _ as *mut std::ffi::c_void,
             };
             let device = $fn_call(&$device.def, &error_handler);
             if device.is_null() { // TODO: test this
-                let error_msg = (error_str as *mut std::ffi::CString).as_ref().unwrap().to_str().unwrap();
-                Err("Failed to create Mouse: ".to_string() + error_msg)
+                let error_msg = (&mut error_str as *mut std::ffi::CString).as_ref().unwrap().to_str().unwrap();
+                Err(format!("Failed to create input device: {error_msg}"))
             } else {
                 Ok(device)
             }
