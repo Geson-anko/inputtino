@@ -43,3 +43,5 @@ impl Drop for InputtinoKeyboard {
         }
     }
 }
+
+unsafe impl Send for InputtinoKeyboard { }

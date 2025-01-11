@@ -70,3 +70,5 @@ pub unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, u
     let joypad: &mut InputtinoXOneJoypad = &mut *(user_data as *mut InputtinoXOneJoypad);
     ((*joypad).on_rumble_fn)(left_motor, right_motor);
 }
+
+unsafe impl Send for InputtinoXOneJoypad { }

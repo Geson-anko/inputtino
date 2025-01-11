@@ -111,3 +111,5 @@ mod tests {
         }
     }
 }
+
+unsafe impl Send for InputtinoMouse { }
