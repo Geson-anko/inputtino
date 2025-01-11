@@ -2,7 +2,7 @@ use crate::{get_nodes, make_device};
 use crate::common::{InputtinoDeviceDefinition, error_handler_fn};
 use crate::c_bindings::{inputtino_mouse_create, inputtino_mouse_destroy, inputtino_mouse_get_nodes, inputtino_mouse_move, inputtino_mouse_move_absolute, inputtino_mouse_press_button, inputtino_mouse_release_button, inputtino_mouse_scroll_horizontal, inputtino_mouse_scroll_vertical};
 
-pub use crate::c_bindings::{INPUTTINO_MOUSE_BUTTON};
+pub use crate::c_bindings::INPUTTINO_MOUSE_BUTTON;
 
 pub struct InputtinoMouse {
     mouse: *mut crate::c_bindings::InputtinoMouse,
@@ -72,7 +72,7 @@ impl Drop for InputtinoMouse {
 
 #[cfg(test)]
 mod tests {
-    use std::ffi::{CString};
+    use std::ffi::CString;
     use super::*;
 
     #[test]
