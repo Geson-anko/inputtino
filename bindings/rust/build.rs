@@ -5,7 +5,7 @@ use cmake::Config;
 
 fn main() {
     // Options
-    let build_c_bindings = env::var("INPUTTINO_BUILD_C_BINDINGS").unwrap_or("FALSE".to_string()) == "TRUE";
+    let build_c_bindings = env::var("INPUTTINO_BUILD_C_BINDINGS").unwrap_or("TRUE".to_string()) == "TRUE";
     let build_static = env::var("INPUTTINO_BUILD_STATIC").unwrap_or("FALSE".to_string()) == "TRUE";
 
     // The bindgen::Builder is the main entry point
@@ -30,7 +30,6 @@ fn main() {
 
         // Compile the library using CMake
         let dst = Config::new(libdir_path)
-            .target("libinputtino")
             .define("BUILD_SHARED_LIBS", if build_static { "OFF" } else { "ON" })
             .define("LIBINPUTTINO_INSTALL", "ON")
             .define("BUILD_TESTING", "OFF")
