@@ -6,7 +6,7 @@ use cmake::Config;
 fn main() {
     // Options
     let build_c_bindings = env::var("INPUTTINO_BUILD_C_BINDINGS").unwrap_or("TRUE".to_string()) == "TRUE";
-    let build_static = env::var("INPUTTINO_BUILD_STATIC").unwrap_or("FALSE".to_string()) == "TRUE";
+    let build_static = env::var("INPUTTINO_BUILD_STATIC").unwrap_or("TRUE".to_string()) == "TRUE";
 
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
@@ -47,11 +47,8 @@ fn main() {
     }
 
     // Dependencies
-    if !build_static {
-        println!("cargo:rustc-link-lib=evdev");
-        println!("cargo:rustc-link-lib=stdc++");
-    }
-
+    println!("cargo:rustc-link-lib=evdev");
+    println!("cargo:rustc-link-lib=stdc++");
     println!("cargo:rustc-link-lib={}libinputtino", if build_static { "static=" } else { "" });
 
     let out = bindings.generate().expect("Unable to generate bindings");
