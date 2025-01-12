@@ -13,8 +13,8 @@ pub use joypad::{JoypadKind, Joypad};
 mod joypad_ps5;
 pub use joypad_ps5::PS5Joypad;
 
-mod joypad_switch;
-pub use joypad_switch::SwitchJoypad;
+mod joypad_nintendo;
+pub use joypad_nintendo::SwitchJoypad;
 
 pub use joypad_xbox::XboxOneJoypad;
 mod joypad_xbox;
