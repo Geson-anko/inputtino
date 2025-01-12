@@ -1,19 +1,29 @@
 use crate::{get_nodes, make_device};
-use crate::common::{InputtinoDeviceDefinition, error_handler_fn};
-use crate::c_bindings::{inputtino_mouse_create, inputtino_mouse_destroy, inputtino_mouse_get_nodes, inputtino_mouse_move, inputtino_mouse_move_absolute, inputtino_mouse_press_button, inputtino_mouse_release_button, inputtino_mouse_scroll_horizontal, inputtino_mouse_scroll_vertical};
+use crate::common::{DeviceDefinition, error_handler_fn};
+use crate::c_bindings::{
+    inputtino_mouse_create,
+    inputtino_mouse_destroy,
+    inputtino_mouse_get_nodes,
+    inputtino_mouse_move,
+    inputtino_mouse_move_absolute,
+    inputtino_mouse_press_button,
+    inputtino_mouse_release_button,
+    inputtino_mouse_scroll_horizontal,
+    inputtino_mouse_scroll_vertical,
+};
 
-pub use crate::c_bindings::INPUTTINO_MOUSE_BUTTON;
+use crate::MouseButton;
 
-pub struct InputtinoMouse {
+pub struct Mouse {
     mouse: *mut crate::c_bindings::InputtinoMouse,
 }
 
-impl InputtinoMouse {
-    pub fn new(device: &InputtinoDeviceDefinition) -> Result<Self, String> {
+impl Mouse {
+    pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
         unsafe {
             let dev = make_device!(inputtino_mouse_create, device);
             match dev {
-                Ok(mouse) => Ok(InputtinoMouse { mouse }),
+                Ok(mouse) => Ok(Mouse { mouse }),
                 Err(e) => Err(e),
             }
         }
@@ -37,13 +47,13 @@ impl InputtinoMouse {
         }
     }
 
-    pub fn press_button(&self, button: INPUTTINO_MOUSE_BUTTON) {
+    pub fn press_button(&self, button: MouseButton) {
         unsafe {
             inputtino_mouse_press_button(self.mouse, button);
         }
     }
 
-    pub fn release_button(&self, button: INPUTTINO_MOUSE_BUTTON) {
+    pub fn release_button(&self, button: MouseButton) {
         unsafe {
             inputtino_mouse_release_button(self.mouse, button);
         }
@@ -62,7 +72,7 @@ impl InputtinoMouse {
     }
 }
 
-impl Drop for InputtinoMouse {
+impl Drop for Mouse {
     fn drop(&mut self) {
         unsafe {
             inputtino_mouse_destroy(self.mouse);
@@ -112,4 +122,4 @@ mod tests {
     }
 }
 
-unsafe impl Send for InputtinoMouse { }
+unsafe impl Send for Mouse { }

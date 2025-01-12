@@ -2,7 +2,7 @@ use std::ffi::CString;
 use crate::c_bindings;
 
 #[allow(dead_code)]
-pub struct InputtinoDeviceDefinition {
+pub struct DeviceDefinition {
     pub def: c_bindings::InputtinoDeviceDefinition,
     // Keep those around since we are passing them as pointers
     name: CString,
@@ -10,7 +10,7 @@ pub struct InputtinoDeviceDefinition {
     uniq: CString,
 }
 
-impl InputtinoDeviceDefinition {
+impl DeviceDefinition {
     pub fn new(name: &str, vendor_id: u16, product_id: u16, version: u16, phys: &str, uniq: &str) -> Self {
         let name = CString::new(name).unwrap();
         let phys = CString::new(phys).unwrap();
@@ -23,7 +23,7 @@ impl InputtinoDeviceDefinition {
             device_phys: phys.as_ptr(), // TODO: optional, if not present random MAC address
             device_uniq: uniq.as_ptr(),
         };
-        InputtinoDeviceDefinition { def, name, phys, uniq }
+        DeviceDefinition { def, name, phys, uniq }
     }
 }
 

@@ -1,9 +1,10 @@
 #[macro_use]
 extern crate approx;
 
-use inputtino_rs::{
-    mouse::{InputtinoMouse, INPUTTINO_MOUSE_BUTTON},
-    common::InputtinoDeviceDefinition,
+use inputtino::{
+    Mouse,
+    DeviceDefinition,
+    MouseButton,
 };
 use input::{Event, Libinput};
 use input::event::{DeviceEvent, PointerEvent};
@@ -14,8 +15,8 @@ use crate::common::{NixInterface, SyncEvent};
 
 #[test]
 fn test_inputtino_mouse() {
-    let device = InputtinoDeviceDefinition::new("Rusty Mouse", 0xAB, 0xCD, 0xEF, "Rusty Mouse Phys", "Rusty Mouse Uniq");
-    let mouse = InputtinoMouse::new(&device).unwrap();
+    let device = DeviceDefinition::new("Rusty Mouse", 0xAB, 0xCD, 0xEF, "Rusty Mouse Phys", "Rusty Mouse Uniq");
+    let mouse = Mouse::new(&device).unwrap();
     let nodes = mouse.get_nodes().unwrap();
     {
         assert_eq!(nodes.len(), 2);
@@ -70,7 +71,7 @@ fn test_inputtino_mouse() {
     }
 
     { // Test mouse button press
-        mouse.press_button(INPUTTINO_MOUSE_BUTTON::LEFT);
+        mouse.press_button(MouseButton::LEFT);
 
         let ev = input.wait_next_event().unwrap();
         assert!(matches!(ev, Event::Pointer(PointerEvent::Button(_))));
@@ -84,7 +85,7 @@ fn test_inputtino_mouse() {
     }
 
     {
-        mouse.release_button(INPUTTINO_MOUSE_BUTTON::LEFT);
+        mouse.release_button(MouseButton::LEFT);
 
         let ev = input.wait_next_event().unwrap();
         assert!(matches!(ev, Event::Pointer(PointerEvent::Button(_))));

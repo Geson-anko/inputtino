@@ -10,7 +10,7 @@ authors = ["ABeltramo"]
 description = "Rust bindings for inputtino"
 
 [lib]
-name = "inputtino_rs"
+name = "inputtino"
 path = "src/lib.rs"
 
 [build-dependencies]

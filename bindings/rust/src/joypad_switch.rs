@@ -1,23 +1,28 @@
 use std::ffi::{c_int, c_void};
-use crate::c_bindings::{inputtino_joypad_switch_create, inputtino_joypad_switch_destroy, inputtino_joypad_switch_get_nodes, inputtino_joypad_switch_set_on_rumble, inputtino_joypad_switch_set_pressed_buttons, inputtino_joypad_switch_set_stick, inputtino_joypad_switch_set_triggers};
-use crate::common::{InputtinoDeviceDefinition, error_handler_fn};
-use crate::{get_nodes, make_device};
+use crate::c_bindings::{
+    inputtino_joypad_switch_create,
+    inputtino_joypad_switch_destroy,
+    inputtino_joypad_switch_get_nodes,
+    inputtino_joypad_switch_set_on_rumble,
+    inputtino_joypad_switch_set_pressed_buttons,
+    inputtino_joypad_switch_set_stick,
+    inputtino_joypad_switch_set_triggers,
+};
+use crate::common::{DeviceDefinition, error_handler_fn};
+use crate::{get_nodes, make_device, JoypadStickPosition};
 
-// re-export INPUTTINO_JOYPAD_BTN and INPUTTINO_JOYPAD_STICK_POSITION
-pub use crate::c_bindings::{INPUTTINO_JOYPAD_BTN, INPUTTINO_JOYPAD_STICK_POSITION};
-
-pub struct InputtinoSwitchJoypad {
+pub struct SwitchJoypad {
     joypad: *mut crate::c_bindings::InputtinoSwitchJoypad,
     on_rumble_fn: Box<dyn FnMut(i32, i32) -> ()>,
 }
 
-impl InputtinoSwitchJoypad {
-    pub fn new(device: &InputtinoDeviceDefinition) -> Result<Self, String> {
+impl SwitchJoypad {
+    pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
         unsafe {
             let dev = make_device!(inputtino_joypad_switch_create, device);
             match dev {
                 Ok(joypad) => {
-                    Ok(InputtinoSwitchJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
+                    Ok(SwitchJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
                 }
                 Err(e) => Err(e),
             }
@@ -42,7 +47,7 @@ impl InputtinoSwitchJoypad {
         }
     }
 
-    pub fn set_stick(&self, stick_type: INPUTTINO_JOYPAD_STICK_POSITION, x: i16, y: i16) {
+    pub fn set_stick(&self, stick_type: JoypadStickPosition, x: i16, y: i16) {
         unsafe {
             inputtino_joypad_switch_set_stick(self.joypad, stick_type, x, y);
         }
@@ -57,7 +62,7 @@ impl InputtinoSwitchJoypad {
     }
 }
 
-impl Drop for InputtinoSwitchJoypad {
+impl Drop for SwitchJoypad {
     fn drop(&mut self) {
         unsafe {
             inputtino_joypad_switch_destroy(self.joypad);
@@ -67,8 +72,8 @@ impl Drop for InputtinoSwitchJoypad {
 
 #[allow(dead_code)]
 pub unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, user_data: *mut ::core::ffi::c_void) {
-    let joypad: &mut InputtinoSwitchJoypad = &mut *(user_data as *mut InputtinoSwitchJoypad);
+    let joypad: &mut SwitchJoypad = &mut *(user_data as *mut SwitchJoypad);
     ((*joypad).on_rumble_fn)(left_motor, right_motor);
 }
 
-unsafe impl Send for InputtinoSwitchJoypad { }
+unsafe impl Send for SwitchJoypad { }

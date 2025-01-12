@@ -1,23 +1,28 @@
 use std::ffi::{c_int, c_void};
-use crate::{get_nodes, make_device};
-use crate::common::{InputtinoDeviceDefinition, error_handler_fn};
-use crate::c_bindings::{inputtino_joypad_xone_create, inputtino_joypad_xone_destroy, inputtino_joypad_xone_get_nodes, inputtino_joypad_xone_set_on_rumble, inputtino_joypad_xone_set_pressed_buttons, inputtino_joypad_xone_set_stick, inputtino_joypad_xone_set_triggers};
+use crate::{get_nodes, make_device, JoypadStickPosition};
+use crate::common::{DeviceDefinition, error_handler_fn};
+use crate::c_bindings::{
+    inputtino_joypad_xone_create,
+    inputtino_joypad_xone_destroy,
+    inputtino_joypad_xone_get_nodes,
+    inputtino_joypad_xone_set_on_rumble,
+    inputtino_joypad_xone_set_pressed_buttons,
+    inputtino_joypad_xone_set_stick,
+    inputtino_joypad_xone_set_triggers,
+};
 
-// re-export INPUTTINO_JOYPAD_BTN and INPUTTINO_JOYPAD_STICK_POSITION
-pub use crate::c_bindings::{INPUTTINO_JOYPAD_BTN, INPUTTINO_JOYPAD_STICK_POSITION};
-
-pub struct InputtinoXOneJoypad {
+pub struct XOneJoypad {
     joypad: *mut crate::c_bindings::InputtinoXOneJoypad,
     on_rumble_fn: Box<dyn FnMut(i32, i32) -> ()>,
 }
 
-impl InputtinoXOneJoypad {
-    pub fn new(device: &InputtinoDeviceDefinition) -> Result<Self, String> {
+impl XOneJoypad {
+    pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
         unsafe {
             let dev = make_device!(inputtino_joypad_xone_create, device);
             match dev {
                 Ok(joypad) => {
-                    Ok(InputtinoXOneJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
+                    Ok(XOneJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
                 }
                 Err(e) => Err(e),
             }
@@ -42,7 +47,7 @@ impl InputtinoXOneJoypad {
         }
     }
 
-    pub fn set_stick(&self, stick_type: INPUTTINO_JOYPAD_STICK_POSITION, x: i16, y: i16) {
+    pub fn set_stick(&self, stick_type: JoypadStickPosition, x: i16, y: i16) {
         unsafe {
             inputtino_joypad_xone_set_stick(self.joypad, stick_type, x, y);
         }
@@ -57,7 +62,7 @@ impl InputtinoXOneJoypad {
     }
 }
 
-impl Drop for InputtinoXOneJoypad {
+impl Drop for XOneJoypad {
     fn drop(&mut self) {
         unsafe {
             inputtino_joypad_xone_destroy(self.joypad);
@@ -67,8 +72,8 @@ impl Drop for InputtinoXOneJoypad {
 
 #[allow(dead_code)]
 pub unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, user_data: *mut ::core::ffi::c_void) {
-    let joypad: &mut InputtinoXOneJoypad = &mut *(user_data as *mut InputtinoXOneJoypad);
+    let joypad: &mut XOneJoypad = &mut *(user_data as *mut XOneJoypad);
     ((*joypad).on_rumble_fn)(left_motor, right_motor);
 }
 
-unsafe impl Send for InputtinoXOneJoypad { }
+unsafe impl Send for XOneJoypad { }

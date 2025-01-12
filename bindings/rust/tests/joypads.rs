@@ -1,13 +1,18 @@
 use serial_test::serial;
-use inputtino_rs::common::InputtinoDeviceDefinition;
-use inputtino_rs::joypad_switch::InputtinoSwitchJoypad;
-use inputtino_rs::joypad_xbox::{InputtinoXOneJoypad, INPUTTINO_JOYPAD_BTN, INPUTTINO_JOYPAD_STICK_POSITION};
+use inputtino::{
+    DeviceDefinition,
+    SwitchJoypad,
+    XOneJoypad,
+    MouseButton,
+    JoypadStickPosition,
+    JoypadButton,
+};
 
 #[test]
 #[serial]
 fn test_xbox_joypad() {
-    let device = InputtinoDeviceDefinition::new("Rusty XOne controller", 0x045e, 0x02dd, 0x0100, "00:11:22:33:44", "00:11:22:33:44");
-    let mut joypad = InputtinoXOneJoypad::new(&device).unwrap();
+    let device = DeviceDefinition::new("Rusty XOne controller", 0x045e, 0x02dd, 0x0100, "00:11:22:33:44", "00:11:22:33:44");
+    let mut joypad = XOneJoypad::new(&device).unwrap();
 
     let nodes = joypad.get_nodes().unwrap();
     {
@@ -37,7 +42,7 @@ fn test_xbox_joypad() {
     assert!(sdl_js.has_rumble());
 
     {
-        joypad.set_pressed(INPUTTINO_JOYPAD_BTN::A as i32);
+        joypad.set_pressed(JoypadButton::A as i32);
         for event in event_pump.wait_timeout_iter(50) {
             match event {
                 sdl2::event::Event::ControllerButtonDown { button, .. } => {
@@ -71,7 +76,7 @@ fn test_xbox_joypad() {
     }
 
     {
-        joypad.set_stick(INPUTTINO_JOYPAD_STICK_POSITION::LS, 0, 0);
+        joypad.set_stick(JoypadStickPosition::LS, 0, 0);
         for event in event_pump.wait_timeout_iter(50) {
             match event {
                 sdl2::event::Event::ControllerAxisMotion { axis, value, .. } => {
@@ -89,7 +94,7 @@ fn test_xbox_joypad() {
     }
 
     {
-        joypad.set_stick(INPUTTINO_JOYPAD_STICK_POSITION::RS, 0, 0);
+        joypad.set_stick(JoypadStickPosition::RS, 0, 0);
         for event in event_pump.wait_timeout_iter(50) {
             match event {
                 sdl2::event::Event::ControllerAxisMotion { axis, value, .. } => {
@@ -125,8 +130,8 @@ fn test_xbox_joypad() {
 #[test]
 #[serial]
 fn test_switch_joypad() {
-    let device = InputtinoDeviceDefinition::new("Rusty Switch controller", 0x045e, 0x02dd, 0x0100, "00:11:22:33:44", "00:11:22:33:44");
-    let mut joypad = InputtinoSwitchJoypad::new(&device).unwrap();
+    let device = DeviceDefinition::new("Rusty Switch controller", 0x045e, 0x02dd, 0x0100, "00:11:22:33:44", "00:11:22:33:44");
+    let mut joypad = SwitchJoypad::new(&device).unwrap();
 
     let nodes = joypad.get_nodes().unwrap();
     {
@@ -156,7 +161,7 @@ fn test_switch_joypad() {
     assert!(sdl_js.has_rumble());
 
     {
-        joypad.set_pressed(INPUTTINO_JOYPAD_BTN::A as i32);
+        joypad.set_pressed(JoypadButton::A as i32);
         for event in event_pump.wait_timeout_iter(50) {
             match event {
                 sdl2::event::Event::ControllerButtonDown { button, .. } => {
@@ -190,7 +195,7 @@ fn test_switch_joypad() {
     }
 
     {
-        joypad.set_stick(INPUTTINO_JOYPAD_STICK_POSITION::LS, 0, 0);
+        joypad.set_stick(JoypadStickPosition::LS, 0, 0);
         for event in event_pump.wait_timeout_iter(50) {
             match event {
                 sdl2::event::Event::ControllerAxisMotion { axis, value, .. } => {
@@ -208,7 +213,7 @@ fn test_switch_joypad() {
     }
 
     {
-        joypad.set_stick(INPUTTINO_JOYPAD_STICK_POSITION::RS, 0, 0);
+        joypad.set_stick(JoypadStickPosition::RS, 0, 0);
         for event in event_pump.wait_timeout_iter(50) {
             match event {
                 sdl2::event::Event::ControllerAxisMotion { axis, value, .. } => {

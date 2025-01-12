@@ -1,24 +1,30 @@
 use std::ffi::{c_int, c_void};
-use crate::{get_nodes, make_device};
-use crate::common::{InputtinoDeviceDefinition, error_handler_fn};
-use crate::c_bindings::{inputtino_joypad_ps5_create, inputtino_joypad_ps5_destroy, inputtino_joypad_ps5_get_nodes, inputtino_joypad_ps5_set_on_rumble, inputtino_joypad_ps5_set_on_led, inputtino_joypad_ps5_set_pressed_buttons, inputtino_joypad_ps5_set_stick, inputtino_joypad_ps5_set_triggers};
+use crate::{get_nodes, make_device, JoypadStickPosition};
+use crate::common::{DeviceDefinition, error_handler_fn};
+use crate::c_bindings::{
+    inputtino_joypad_ps5_create,
+    inputtino_joypad_ps5_destroy,
+    inputtino_joypad_ps5_get_nodes,
+    inputtino_joypad_ps5_set_on_rumble,
+    inputtino_joypad_ps5_set_on_led,
+    inputtino_joypad_ps5_set_pressed_buttons,
+    inputtino_joypad_ps5_set_stick,
+    inputtino_joypad_ps5_set_triggers,
+};
 
-// re-export INPUTTINO_JOYPAD_BTN and INPUTTINO_JOYPAD_STICK_POSITION
-pub use crate::c_bindings::{INPUTTINO_JOYPAD_BTN, INPUTTINO_JOYPAD_STICK_POSITION};
-
-pub struct InputtinoPS5Joypad {
+pub struct PS5Joypad {
     joypad: *mut crate::c_bindings::InputtinoPS5Joypad,
     on_rumble_fn: Box<dyn FnMut(i32, i32) -> ()>,
     on_led_fn: Box<dyn FnMut(i32, i32, i32) -> ()>,
 }
 
-impl InputtinoPS5Joypad {
-    pub fn new(device: &InputtinoDeviceDefinition) -> Result<Self, String> {
+impl PS5Joypad {
+    pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
         unsafe {
             let dev = make_device!(inputtino_joypad_ps5_create, device);
             match dev {
                 Ok(joypad) => {
-                    Ok(InputtinoPS5Joypad {
+                    Ok(PS5Joypad {
                         joypad,
                         on_rumble_fn: Box::new(|_, _| {}),
                         on_led_fn: Box::new(|_, _, _| {}),
@@ -47,7 +53,7 @@ impl InputtinoPS5Joypad {
         }
     }
 
-    pub fn set_stick(&self, stick_type: INPUTTINO_JOYPAD_STICK_POSITION, x: i16, y: i16) {
+    pub fn set_stick(&self, stick_type: JoypadStickPosition, x: i16, y: i16) {
         unsafe {
             inputtino_joypad_ps5_set_stick(self.joypad, stick_type, x, y);
         }
@@ -70,7 +76,7 @@ impl InputtinoPS5Joypad {
     }
 }
 
-impl Drop for InputtinoPS5Joypad {
+impl Drop for PS5Joypad {
     fn drop(&mut self) {
         unsafe {
             inputtino_joypad_ps5_destroy(self.joypad);
@@ -79,13 +85,13 @@ impl Drop for InputtinoPS5Joypad {
 }
 
 pub unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, user_data: *mut ::core::ffi::c_void) {
-    let joypad: &mut InputtinoPS5Joypad = &mut *(user_data as *mut InputtinoPS5Joypad);
+    let joypad: &mut PS5Joypad = &mut *(user_data as *mut PS5Joypad);
     ((*joypad).on_rumble_fn)(left_motor, right_motor);
 }
 
 pub unsafe extern "C" fn on_led_c_fn(r: c_int, g: c_int, b: c_int, user_data: *mut ::core::ffi::c_void) {
-    let joypad: &mut InputtinoPS5Joypad = &mut *(user_data as *mut InputtinoPS5Joypad);
+    let joypad: &mut PS5Joypad = &mut *(user_data as *mut PS5Joypad);
     ((*joypad).on_led_fn)(r, g, b);
 }
 
-unsafe impl Send for InputtinoPS5Joypad { }
+unsafe impl Send for PS5Joypad { }

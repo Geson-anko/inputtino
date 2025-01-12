@@ -1,16 +1,18 @@
 use input::{Event, Libinput};
-use input::event::{DeviceEvent};
+use input::event::DeviceEvent;
 use input::event::keyboard::KeyboardEventTrait;
-use inputtino_rs::{common::InputtinoDeviceDefinition,
-                   keyboard::InputtinoKeyboard};
+use inputtino::{
+    DeviceDefinition,
+    Keyboard,
+};
 mod common;
 use crate::common::{NixInterface, SyncEvent};
 
 
 #[test]
 fn test_inputtino_keyboard() {
-    let device = InputtinoDeviceDefinition::new("Rusty Keyboard", 0xAB, 0xCD, 0xEF, "Rusty Keyboard Phys", "Rusty Keyboard Uniq");
-    let keyboard = InputtinoKeyboard::new(&device).unwrap();
+    let device = DeviceDefinition::new("Rusty Keyboard", 0xAB, 0xCD, 0xEF, "Rusty Keyboard Phys", "Rusty Keyboard Uniq");
+    let keyboard = Keyboard::new(&device).unwrap();
     let nodes = keyboard.get_nodes().unwrap();
     {
         assert_eq!(nodes.len(), 1);
