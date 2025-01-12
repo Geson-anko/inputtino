@@ -23,8 +23,7 @@ pub enum Joypad {
 impl Joypad {
     pub fn new(kind: &JoypadKind, device: &DeviceDefinition) -> Result<Joypad, String> {
         match kind {
-            JoypadKind::Unknown => XboxOneJoypad::new(device).map(Joypad::XOne),
-            JoypadKind::Xbox => XboxOneJoypad::new(device).map(Joypad::XOne),
+            JoypadKind::Unknown | JoypadKind::Xbox => XboxOneJoypad::new(device).map(Joypad::XOne),
             JoypadKind::PlayStation => PS5Joypad::new(device).map(Joypad::PS5),
             JoypadKind::Nintendo => SwitchJoypad::new(device).map(Joypad::Switch),
         }
