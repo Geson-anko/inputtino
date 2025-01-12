@@ -16,8 +16,8 @@ pub use joypad_ps5::PS5Joypad;
 mod joypad_switch;
 pub use joypad_switch::SwitchJoypad;
 
-pub use joypad_xone::XOneJoypad;
-mod joypad_xone;
+pub use joypad_xbox::XboxOneJoypad;
+mod joypad_xbox;
 
 // Private low level automatic c bindings
 mod c_bindings;

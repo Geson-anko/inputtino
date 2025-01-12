@@ -11,18 +11,18 @@ use crate::c_bindings::{
     inputtino_joypad_xone_set_triggers,
 };
 
-pub struct XOneJoypad {
+pub struct XboxOneJoypad {
     joypad: *mut crate::c_bindings::InputtinoXOneJoypad,
     on_rumble_fn: Box<dyn FnMut(i32, i32) -> ()>,
 }
 
-impl XOneJoypad {
+impl XboxOneJoypad {
     pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
         unsafe {
             let dev = make_device!(inputtino_joypad_xone_create, device);
             match dev {
                 Ok(joypad) => {
-                    Ok(XOneJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
+                    Ok(XboxOneJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
                 }
                 Err(e) => Err(e),
             }
@@ -62,7 +62,7 @@ impl XOneJoypad {
     }
 }
 
-impl Drop for XOneJoypad {
+impl Drop for XboxOneJoypad {
     fn drop(&mut self) {
         unsafe {
             inputtino_joypad_xone_destroy(self.joypad);
@@ -72,8 +72,8 @@ impl Drop for XOneJoypad {
 
 #[allow(dead_code)]
 pub unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, user_data: *mut ::core::ffi::c_void) {
-    let joypad: &mut XOneJoypad = &mut *(user_data as *mut XOneJoypad);
+    let joypad: &mut XboxOneJoypad = &mut *(user_data as *mut XboxOneJoypad);
     ((*joypad).on_rumble_fn)(left_motor, right_motor);
 }
 
-unsafe impl Send for XOneJoypad { }
+unsafe impl Send for XboxOneJoypad { }

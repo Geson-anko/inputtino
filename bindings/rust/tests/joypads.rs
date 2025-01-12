@@ -2,17 +2,16 @@ use serial_test::serial;
 use inputtino::{
     DeviceDefinition,
     SwitchJoypad,
-    XOneJoypad,
-    MouseButton,
+    XboxOneJoypad,
     JoypadStickPosition,
     JoypadButton,
 };
 
 #[test]
 #[serial]
-fn test_xbox_joypad() {
+fn test_xone_joypad() {
     let device = DeviceDefinition::new("Rusty XOne controller", 0x045e, 0x02dd, 0x0100, "00:11:22:33:44", "00:11:22:33:44");
-    let mut joypad = XOneJoypad::new(&device).unwrap();
+    let mut joypad = XboxOneJoypad::new(&device).unwrap();
 
     let nodes = joypad.get_nodes().unwrap();
     {

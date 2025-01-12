@@ -1,7 +1,7 @@
 use strum_macros::FromRepr;
 
 use crate::{
-    DeviceDefinition, JoypadStickPosition, PS5Joypad, SwitchJoypad, XOneJoypad
+    DeviceDefinition, JoypadStickPosition, PS5Joypad, SwitchJoypad, XboxOneJoypad
 };
 
 #[derive(Debug, FromRepr)]
@@ -15,7 +15,7 @@ pub enum JoypadKind {
 
 #[repr(u8)]
 pub enum Joypad {
-    XOne(XOneJoypad),
+    XOne(XboxOneJoypad),
     PS5(PS5Joypad),
     Switch(SwitchJoypad),
 }
@@ -23,8 +23,8 @@ pub enum Joypad {
 impl Joypad {
     pub fn new(kind: &JoypadKind, device: &DeviceDefinition) -> Result<Joypad, String> {
         match kind {
-            JoypadKind::Unknown => XOneJoypad::new(device).map(Joypad::XOne),
-            JoypadKind::Xbox => XOneJoypad::new(device).map(Joypad::XOne),
+            JoypadKind::Unknown => XboxOneJoypad::new(device).map(Joypad::XOne),
+            JoypadKind::Xbox => XboxOneJoypad::new(device).map(Joypad::XOne),
             JoypadKind::PlayStation => PS5Joypad::new(device).map(Joypad::PS5),
             JoypadKind::Nintendo => SwitchJoypad::new(device).map(Joypad::Switch),
         }
