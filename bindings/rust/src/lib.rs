@@ -19,7 +19,7 @@ pub use joypad_nintendo::SwitchJoypad;
 pub use joypad_xbox::XboxOneJoypad;
 mod joypad_xbox;
 
-// Private low level automatic c bindings
+// Low level automatic c bindings.
 mod c_bindings;
 pub use c_bindings::{
     INPUTTINO_JOYPAD_STICK_POSITION as JoypadStickPosition,
