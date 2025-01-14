@@ -186,7 +186,7 @@ fn test_switch_joypad() {
 
     assert_eq!(sdl_js.name(), "Nintendo Switch Pro Controller");
     assert!(sdl_js.has_rumble());
-a
+
     {
         joypad.set_pressed(JoypadButton::A as i32);
         for event in event_pump.wait_timeout_iter(50) {
