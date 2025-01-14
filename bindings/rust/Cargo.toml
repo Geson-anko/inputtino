@@ -1,17 +1,11 @@
 [package]
 name = "inputtino"
-version = "2024.8.1"
+version = "0.1.0"
 edition = "2021"
 license = "MIT"
-rust-version = "1.72"
-links = "libinputtino"
 homepage = "https://github.com/games-on-whales/inputtino"
 authors = ["ABeltramo"]
 description = "Rust bindings for inputtino"
-
-[lib]
-name = "inputtino"
-path = "src/lib.rs"
 
 [build-dependencies]
 bindgen = "0.69.4"
