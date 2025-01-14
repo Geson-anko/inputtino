@@ -1,16 +1,18 @@
+use inputtino::{DeviceDefinition, JoypadButton, JoypadStickPosition, SwitchJoypad, XboxOneJoypad};
 use serial_test::serial;
-use inputtino::{
-    DeviceDefinition,
-    SwitchJoypad,
-    XboxOneJoypad,
-    JoypadStickPosition,
-    JoypadButton,
-};
 
 #[test]
 #[serial]
 fn test_xone_joypad() {
-    let device = DeviceDefinition::new("Rusty XOne controller", 0x045e, 0x02dd, 0x0100, "00:11:22:33:44", "00:11:22:33:44");
+    let device = DeviceDefinition::new(
+        "Rusty XOne controller",
+        // https://github.com/torvalds/linux/blob/master/drivers/input/joystick/xpad.c#L147
+        0x045e,
+        0x02EA,
+        0x0408,
+        "00:11:22:33:44",
+        "00:11:22:33:44",
+    );
     let mut joypad = XboxOneJoypad::new(&device).unwrap();
 
     let nodes = joypad.get_nodes().unwrap();
@@ -20,8 +22,14 @@ fn test_xone_joypad() {
         assert!(nodes[1].starts_with("/dev/input/js"));
     }
 
+    // Sleep to let the system detect the new device
+    std::thread::sleep(std::time::Duration::from_millis(500));
+
     let sdl = sdl2::init().unwrap();
     let joystick_subsystem = sdl.game_controller().unwrap();
+
+    assert_eq!(joystick_subsystem.num_joysticks().unwrap(), 1);
+
     let mut sdl_js = joystick_subsystem.open(0).unwrap();
     let mut event_pump = sdl.event_pump().unwrap();
 
@@ -37,7 +45,7 @@ fn test_xone_joypad() {
         }
     }
 
-    assert_eq!(sdl_js.name(), "Xbox One Controller");
+    assert_eq!(sdl_js.name(), "Xbox One S Controller");
     assert!(sdl_js.has_rumble());
 
     {
@@ -64,7 +72,9 @@ fn test_xone_joypad() {
                     assert_eq!(axis, sdl2::controller::Axis::TriggerLeft);
                     assert_eq!(value, 0);
                 }
-                sdl2::event::Event::JoyAxisMotion { axis_idx, value, .. } => {
+                sdl2::event::Event::JoyAxisMotion {
+                    axis_idx, value, ..
+                } => {
                     assert_eq!(axis_idx, sdl2::controller::Axis::TriggerLeft as u8);
                     assert_eq!(value, 0);
                     break;
@@ -82,7 +92,9 @@ fn test_xone_joypad() {
                     assert_eq!(axis, sdl2::controller::Axis::LeftX);
                     assert_eq!(value, 0);
                 }
-                sdl2::event::Event::JoyAxisMotion { axis_idx, value, .. } => {
+                sdl2::event::Event::JoyAxisMotion {
+                    axis_idx, value, ..
+                } => {
                     assert_eq!(axis_idx, sdl2::controller::Axis::LeftX as u8);
                     assert_eq!(value, 0);
                     break;
@@ -100,7 +112,9 @@ fn test_xone_joypad() {
                     assert_eq!(axis, sdl2::controller::Axis::RightX);
                     assert_eq!(value, 0);
                 }
-                sdl2::event::Event::JoyAxisMotion { axis_idx, value, .. } => {
+                sdl2::event::Event::JoyAxisMotion {
+                    axis_idx, value, ..
+                } => {
                     assert_eq!(axis_idx, sdl2::controller::Axis::RightX as u8);
                     assert_eq!(value, 0);
                     break;
@@ -129,7 +143,15 @@ fn test_xone_joypad() {
 #[test]
 #[serial]
 fn test_switch_joypad() {
-    let device = DeviceDefinition::new("Rusty Switch controller", 0x045e, 0x02dd, 0x0100, "00:11:22:33:44", "00:11:22:33:44");
+    let device = DeviceDefinition::new(
+        "Rusty Switch controller",
+        // https://github.com/torvalds/linux/blob/master/drivers/hid/hid-ids.h#L981
+        0x057e,
+        0x2009,
+        0x8111,
+        "00:11:22:33:44",
+        "00:11:22:33:44",
+    );
     let mut joypad = SwitchJoypad::new(&device).unwrap();
 
     let nodes = joypad.get_nodes().unwrap();
@@ -139,8 +161,14 @@ fn test_switch_joypad() {
         assert!(nodes[1].starts_with("/dev/input/js"));
     }
 
+    // Sleep to let the system detect the anew device
+    std::thread::sleep(std::time::Duration::from_millis(500));
+
     let sdl = sdl2::init().unwrap();
     let joystick_subsystem = sdl.game_controller().unwrap();
+
+    assert_eq!(joystick_subsystem.num_joysticks().unwrap(), 1);
+
     let mut sdl_js = joystick_subsystem.open(0).unwrap();
     let mut event_pump = sdl.event_pump().unwrap();
 
@@ -156,17 +184,19 @@ fn test_switch_joypad() {
         }
     }
 
-    assert_eq!(sdl_js.name(), "Xbox One Controller");
+    assert_eq!(sdl_js.name(), "Nintendo Switch Pro Controller");
     assert!(sdl_js.has_rumble());
-
+a
     {
         joypad.set_pressed(JoypadButton::A as i32);
         for event in event_pump.wait_timeout_iter(50) {
             match event {
                 sdl2::event::Event::ControllerButtonDown { button, .. } => {
-                    assert_eq!(button, sdl2::controller::Button::B);
+                    assert_eq!(button, sdl2::controller::Button::A);
                 }
                 sdl2::event::Event::JoyButtonDown { button_idx, .. } => {
+                    // Old joystick API uses the "xbox" layout for indexes
+                    // A on a switch pad is on the same position as B on an xbox pad
                     assert_eq!(button_idx, sdl2::controller::Button::B as u8);
                     break;
                 }
@@ -183,7 +213,9 @@ fn test_switch_joypad() {
                     assert_eq!(axis, sdl2::controller::Axis::TriggerLeft);
                     assert_eq!(value, 0);
                 }
-                sdl2::event::Event::JoyAxisMotion { axis_idx, value, .. } => {
+                sdl2::event::Event::JoyAxisMotion {
+                    axis_idx, value, ..
+                } => {
                     assert_eq!(axis_idx, sdl2::controller::Axis::TriggerLeft as u8);
                     assert_eq!(value, 0);
                     break;
@@ -201,7 +233,9 @@ fn test_switch_joypad() {
                     assert_eq!(axis, sdl2::controller::Axis::LeftX);
                     assert_eq!(value, 0);
                 }
-                sdl2::event::Event::JoyAxisMotion { axis_idx, value, .. } => {
+                sdl2::event::Event::JoyAxisMotion {
+                    axis_idx, value, ..
+                } => {
                     assert_eq!(axis_idx, sdl2::controller::Axis::LeftX as u8);
                     assert_eq!(value, 0);
                     break;
@@ -219,7 +253,9 @@ fn test_switch_joypad() {
                     assert_eq!(axis, sdl2::controller::Axis::RightX);
                     assert_eq!(value, 0);
                 }
-                sdl2::event::Event::JoyAxisMotion { axis_idx, value, .. } => {
+                sdl2::event::Event::JoyAxisMotion {
+                    axis_idx, value, ..
+                } => {
                     assert_eq!(axis_idx, sdl2::controller::Axis::RightX as u8);
                     assert_eq!(value, 0);
                     break;
