@@ -4,52 +4,38 @@ use std::path::PathBuf;
 use cmake::Config;
 
 fn main() {
-    // Options
-    let build_c_bindings = env::var("INPUTTINO_BUILD_C_BINDINGS").unwrap_or("TRUE".to_string()) == "TRUE";
-    let build_static = env::var("INPUTTINO_BUILD_STATIC").unwrap_or("TRUE".to_string()) == "TRUE";
-
-    // The bindgen::Builder is the main entry point
-    // to bindgen, and lets you build up options for
-    // the resulting bindings.
     let mut bindings = bindgen::Builder::default()
         .use_core()
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         })
-        // Set the INPUTTINO_STATIC_DEFINE macro
-        .clang_arg(if build_static { "-D INPUTTINO_STATIC_DEFINE=1" } else { "" })
-        // The input header we would like to generate bindings for.
+        .clang_arg("-D INPUTTINO_STATIC_DEFINE=1")
         .header("wrapper.hpp");
 
-    if build_c_bindings {
-        let libdir_path = PathBuf::from("../../")
-            // Canonicalize the path as `rustc-link-search` requires an absolute
-            // path.
-            .canonicalize()
-            .expect("cannot canonicalize path");
+    let libdir_path = PathBuf::from("../../")
+        // Canonicalize the path as `rustc-link-search` requires an absolute
+        // path.
+        .canonicalize()
+        .expect("cannot canonicalize path");
 
-        // Compile the library using CMake
-        let dst = Config::new(libdir_path)
-            .define("BUILD_SHARED_LIBS", if build_static { "OFF" } else { "ON" })
-            .define("LIBINPUTTINO_INSTALL", "ON")
-            .define("BUILD_TESTING", "OFF")
-            .define("BUILD_SERVER", "OFF")
-            .define("BUILD_C_BINDINGS", "ON")
-            .profile("Release")
-            .define("CMAKE_CONFIGURATION_TYPES", "Release")
-            .build();
+    // Compile the library using CMake
+    let dst = Config::new(libdir_path)
+        .define("BUILD_SHARED_LIBS", "OFF")
+        .define("LIBINPUTTINO_INSTALL", "ON")
+        .define("BUILD_TESTING", "OFF")
+        .define("BUILD_SERVER", "OFF")
+        .define("BUILD_C_BINDINGS", "ON")
+        .profile("Release")
+        .define("CMAKE_CONFIGURATION_TYPES", "Release")
+        .build();
 
-        println!("cargo:rustc-link-search=native={}/lib", dst.display());
-        bindings = bindings.clang_arg(format!("-I{}/include/", dst.display()))
-    } else {
-        let lib = pkg_config::probe_library("libinputtino").unwrap();
-        bindings = bindings.clang_arg(format!("-I{}", lib.include_paths[0].display()));
-    }
+    println!("cargo:rustc-link-search=native={}/lib", dst.display());
+    bindings = bindings.clang_arg(format!("-I{}/include/", dst.display()));
 
     // Dependencies
     println!("cargo:rustc-link-lib=evdev");
     println!("cargo:rustc-link-lib=stdc++");
-    println!("cargo:rustc-link-lib={}libinputtino", if build_static { "static=" } else { "" });
+    println!("cargo:rustc-link-lib=static=libinputtino");
 
     let out = bindings.generate().expect("Unable to generate bindings");
 
