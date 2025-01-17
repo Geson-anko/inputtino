@@ -48,13 +48,13 @@ pub unsafe extern "C" fn error_handler_fn(
     *user_data = CString::from(error_str);
 }
 
-type InputtinoGetNodesFn<T> = unsafe extern "C" fn(
+type GetNodesFn<T> = unsafe extern "C" fn(
     device: *mut T,
     num_nodes: *mut ::core::ffi::c_int,
 ) -> *mut *mut ::core::ffi::c_char;
 
 pub(crate) fn get_nodes<T>(
-    f: InputtinoGetNodesFn<T>,
+    f: GetNodesFn<T>,
     device: *mut T,
 ) -> Result<Vec<PathBuf>, String> {
     let mut nodes_count: core::ffi::c_int = 0;
@@ -72,13 +72,13 @@ pub(crate) fn get_nodes<T>(
     Ok(result)
 }
 
-type InputtinoDeviceFn<T> = unsafe extern "C" fn(
+type CreateDeviceFn<T> = unsafe extern "C" fn(
     device: *const InputtinoDeviceDefinition,
     eh: *const InputtinoErrorHandler,
 ) -> *mut T;
 
 pub(crate) fn make_device<T>(
-    f: InputtinoDeviceFn<T>,
+    f: CreateDeviceFn<T>,
     definition: &DeviceDefinition,
 ) -> Result<*mut T, String> {
     let mut error_str = std::ffi::CString::default();
