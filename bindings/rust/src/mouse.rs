@@ -1,5 +1,5 @@
-use crate::{get_nodes, make_device};
-use crate::common::{DeviceDefinition, error_handler_fn};
+use crate::get_nodes;
+use crate::common::{make_device, DeviceDefinition};
 use crate::ffi::{
     inputtino_mouse_create,
     inputtino_mouse_destroy,
@@ -20,13 +20,8 @@ pub struct Mouse {
 
 impl Mouse {
     pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
-        unsafe {
-            let dev = make_device!(inputtino_mouse_create, device);
-            match dev {
-                Ok(mouse) => Ok(Mouse { mouse }),
-                Err(e) => Err(e),
-            }
-        }
+        make_device(inputtino_mouse_create, device)
+            .map(|mouse| Mouse { mouse })
     }
 
     pub fn get_nodes(&self) -> Result<Vec<String>, String> {

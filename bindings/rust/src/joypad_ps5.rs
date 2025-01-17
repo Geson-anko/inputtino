@@ -1,6 +1,6 @@
 use std::ffi::{c_int, c_void};
-use crate::{get_nodes, make_device, JoypadStickPosition};
-use crate::common::{DeviceDefinition, error_handler_fn};
+use crate::{get_nodes, JoypadStickPosition};
+use crate::common::{make_device, DeviceDefinition};
 use crate::ffi::{
     inputtino_joypad_ps5_create,
     inputtino_joypad_ps5_destroy,
@@ -20,19 +20,12 @@ pub struct PS5Joypad {
 
 impl PS5Joypad {
     pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
-        unsafe {
-            let dev = make_device!(inputtino_joypad_ps5_create, device);
-            match dev {
-                Ok(joypad) => {
-                    Ok(PS5Joypad {
-                        joypad,
-                        on_rumble_fn: Box::new(|_, _| {}),
-                        on_led_fn: Box::new(|_, _, _| {}),
-                    })
-                }
-                Err(e) => Err(e),
-            }
-        }
+        make_device(inputtino_joypad_ps5_create, device)
+            .map(|joypad| PS5Joypad {
+                joypad,
+                on_rumble_fn: Box::new(|_, _| {}),
+                on_led_fn: Box::new(|_, _, _| {}),
+            })
     }
 
     pub fn get_nodes(&self) -> Result<Vec<String>, String> {

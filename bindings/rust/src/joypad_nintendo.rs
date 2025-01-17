@@ -8,8 +8,8 @@ use crate::ffi::{
     inputtino_joypad_switch_set_stick,
     inputtino_joypad_switch_set_triggers,
 };
-use crate::common::{DeviceDefinition, error_handler_fn};
-use crate::{get_nodes, make_device, JoypadStickPosition};
+use crate::common::{make_device, DeviceDefinition};
+use crate::{get_nodes, JoypadStickPosition};
 
 pub struct SwitchJoypad {
     joypad: *mut crate::ffi::InputtinoSwitchJoypad,
@@ -18,15 +18,8 @@ pub struct SwitchJoypad {
 
 impl SwitchJoypad {
     pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
-        unsafe {
-            let dev = make_device!(inputtino_joypad_switch_create, device);
-            match dev {
-                Ok(joypad) => {
-                    Ok(SwitchJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
-                }
-                Err(e) => Err(e),
-            }
-        }
+        make_device(inputtino_joypad_switch_create, device)
+            .map(|joypad| SwitchJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
     }
 
     pub fn get_nodes(&self) -> Result<Vec<String>, String> {

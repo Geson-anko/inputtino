@@ -1,6 +1,6 @@
 use std::ffi::{c_int, c_void};
-use crate::{get_nodes, make_device, JoypadStickPosition};
-use crate::common::{DeviceDefinition, error_handler_fn};
+use crate::{get_nodes, JoypadStickPosition};
+use crate::common::{make_device, DeviceDefinition};
 use crate::ffi::{
     inputtino_joypad_xone_create,
     inputtino_joypad_xone_destroy,
@@ -18,15 +18,8 @@ pub struct XboxOneJoypad {
 
 impl XboxOneJoypad {
     pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
-        unsafe {
-            let dev = make_device!(inputtino_joypad_xone_create, device);
-            match dev {
-                Ok(joypad) => {
-                    Ok(XboxOneJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
-                }
-                Err(e) => Err(e),
-            }
-        }
+        make_device(inputtino_joypad_xone_create, device)
+            .map(|joypad| XboxOneJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
     }
 
     pub fn get_nodes(&self) -> Result<Vec<String>, String> {

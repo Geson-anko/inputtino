@@ -1,5 +1,5 @@
-use crate::common::{error_handler_fn, DeviceDefinition};
-use crate::{get_nodes, make_device};
+use crate::common::{make_device, DeviceDefinition};
+use crate::get_nodes;
 use crate::ffi::{inputtino_keyboard_create, inputtino_keyboard_get_nodes, inputtino_keyboard_press, inputtino_keyboard_release, inputtino_keyboard_destroy};
 
 pub struct Keyboard {
@@ -8,13 +8,8 @@ pub struct Keyboard {
 
 impl Keyboard {
     pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
-        unsafe {
-            let dev = make_device!(inputtino_keyboard_create, device);
-            match dev {
-                Ok(kb) => Ok(Keyboard { kb }),
-                Err(e) => Err(e),
-            }
-        }
+        make_device(inputtino_keyboard_create, device)
+            .map(|kb| Keyboard { kb })
     }
 
     pub fn get_nodes(&self) -> Result<Vec<String>, String> {
