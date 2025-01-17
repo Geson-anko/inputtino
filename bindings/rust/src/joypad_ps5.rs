@@ -1,6 +1,7 @@
 use std::ffi::{c_int, c_void};
-use crate::{get_nodes, JoypadStickPosition};
-use crate::common::{make_device, DeviceDefinition};
+use std::path::PathBuf;
+use crate::JoypadStickPosition;
+use crate::common::{get_nodes, make_device, DeviceDefinition};
 use crate::ffi::{
     inputtino_joypad_ps5_create,
     inputtino_joypad_ps5_destroy,
@@ -28,10 +29,8 @@ impl PS5Joypad {
             })
     }
 
-    pub fn get_nodes(&self) -> Result<Vec<String>, String> {
-        unsafe {
-            get_nodes!(inputtino_joypad_ps5_get_nodes, self.joypad)
-        }
+    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
+        get_nodes(inputtino_joypad_ps5_get_nodes, self.joypad)
     }
 
     pub fn set_pressed(&self, buttons: i32) {

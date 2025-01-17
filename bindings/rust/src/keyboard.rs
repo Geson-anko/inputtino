@@ -1,5 +1,6 @@
-use crate::common::{make_device, DeviceDefinition};
-use crate::get_nodes;
+use std::path::PathBuf;
+
+use crate::common::{get_nodes, make_device, DeviceDefinition};
 use crate::ffi::{inputtino_keyboard_create, inputtino_keyboard_get_nodes, inputtino_keyboard_press, inputtino_keyboard_release, inputtino_keyboard_destroy};
 
 pub struct Keyboard {
@@ -12,10 +13,8 @@ impl Keyboard {
             .map(|kb| Keyboard { kb })
     }
 
-    pub fn get_nodes(&self) -> Result<Vec<String>, String> {
-        unsafe {
-            get_nodes!(inputtino_keyboard_get_nodes, self.kb)
-        }
+    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
+        get_nodes(inputtino_keyboard_get_nodes, self.kb)
     }
 
     pub fn press_key(&self, key: i16) {

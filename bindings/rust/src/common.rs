@@ -1,5 +1,5 @@
 use crate::ffi::{self, InputtinoDeviceDefinition, InputtinoErrorHandler};
-use std::ffi::CString;
+use std::{ffi::CString, path::PathBuf};
 
 #[allow(dead_code)]
 pub struct DeviceDefinition {
@@ -24,9 +24,9 @@ impl DeviceDefinition {
         let uniq = CString::new(uniq).unwrap();
         let def = ffi::InputtinoDeviceDefinition {
             name: name.as_ptr(),
-            vendor_id: vendor_id,
-            product_id: product_id,
-            version: version,
+            vendor_id,
+            product_id,
+            version,
             device_phys: phys.as_ptr(), // TODO: optional, if not present random MAC address
             device_uniq: uniq.as_ptr(),
         };
@@ -48,22 +48,28 @@ pub unsafe extern "C" fn error_handler_fn(
     *user_data = CString::from(error_str);
 }
 
-#[macro_export]
-macro_rules! get_nodes {
-    ( $fn_call:expr,$var:expr ) => {{
-        let mut nodes_count: core::ffi::c_int = 0;
-        let nodes = $fn_call($var, &mut nodes_count);
-        if nodes.is_null() {
-            return Err("Failed to get nodes".to_string());
-        }
+type InputtinoGetNodesFn<T> = unsafe extern "C" fn(
+    device: *mut T,
+    num_nodes: *mut ::core::ffi::c_int,
+) -> *mut *mut ::core::ffi::c_char;
 
-        let mut result = Vec::new();
-        for i in 0..nodes_count {
-            let node = std::ffi::CString::from_raw(*nodes.offset(i as isize));
-            result.push(node.to_str().unwrap().to_string());
-        }
-        Ok(result)
-    }};
+pub(crate) fn get_nodes<T>(
+    f: InputtinoGetNodesFn<T>,
+    device: *mut T,
+) -> Result<Vec<PathBuf>, String> {
+    let mut nodes_count: core::ffi::c_int = 0;
+    let nodes = unsafe { f(device, &mut nodes_count) };
+    if nodes.is_null() {
+        return Err("Failed to get nodes".to_string());
+    }
+
+    let mut result = Vec::new();
+    for i in 0..nodes_count {
+        let node = unsafe { std::ffi::CString::from_raw(*nodes.offset(i as isize)) };
+        result.push(PathBuf::from(&node.to_string_lossy().to_string()));
+    }
+
+    Ok(result)
 }
 
 type InputtinoDeviceFn<T> = unsafe extern "C" fn(

@@ -1,4 +1,5 @@
 use std::ffi::{c_int, c_void};
+use std::path::PathBuf;
 use crate::ffi::{
     inputtino_joypad_switch_create,
     inputtino_joypad_switch_destroy,
@@ -8,8 +9,8 @@ use crate::ffi::{
     inputtino_joypad_switch_set_stick,
     inputtino_joypad_switch_set_triggers,
 };
-use crate::common::{make_device, DeviceDefinition};
-use crate::{get_nodes, JoypadStickPosition};
+use crate::common::{get_nodes, make_device, DeviceDefinition};
+use crate::JoypadStickPosition;
 
 pub struct SwitchJoypad {
     joypad: *mut crate::ffi::InputtinoSwitchJoypad,
@@ -22,10 +23,8 @@ impl SwitchJoypad {
             .map(|joypad| SwitchJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
     }
 
-    pub fn get_nodes(&self) -> Result<Vec<String>, String> {
-        unsafe {
-            get_nodes!(inputtino_joypad_switch_get_nodes, self.joypad)
-        }
+    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
+        get_nodes(inputtino_joypad_switch_get_nodes, self.joypad)
     }
 
     pub fn set_pressed(&self, buttons: i32) {
