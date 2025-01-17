@@ -1,7 +1,7 @@
 use std::ffi::{c_int, c_void};
 use crate::{get_nodes, make_device, JoypadStickPosition};
 use crate::common::{DeviceDefinition, error_handler_fn};
-use crate::c_bindings::{
+use crate::ffi::{
     inputtino_joypad_ps5_create,
     inputtino_joypad_ps5_destroy,
     inputtino_joypad_ps5_get_nodes,
@@ -13,7 +13,7 @@ use crate::c_bindings::{
 };
 
 pub struct PS5Joypad {
-    joypad: *mut crate::c_bindings::InputtinoPS5Joypad,
+    joypad: *mut crate::ffi::InputtinoPS5Joypad,
     on_rumble_fn: Box<dyn FnMut(i32, i32) -> ()>,
     on_led_fn: Box<dyn FnMut(i32, i32, i32) -> ()>,
 }

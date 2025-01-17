@@ -1,7 +1,7 @@
 use std::ffi::{c_int, c_void};
 use crate::{get_nodes, make_device, JoypadStickPosition};
 use crate::common::{DeviceDefinition, error_handler_fn};
-use crate::c_bindings::{
+use crate::ffi::{
     inputtino_joypad_xone_create,
     inputtino_joypad_xone_destroy,
     inputtino_joypad_xone_get_nodes,
@@ -12,7 +12,7 @@ use crate::c_bindings::{
 };
 
 pub struct XboxOneJoypad {
-    joypad: *mut crate::c_bindings::InputtinoXOneJoypad,
+    joypad: *mut crate::ffi::InputtinoXOneJoypad,
     on_rumble_fn: Box<dyn FnMut(i32, i32) -> ()>,
 }
 

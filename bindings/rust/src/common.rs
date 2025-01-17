@@ -1,9 +1,9 @@
 use std::ffi::CString;
-use crate::c_bindings;
+use crate::ffi;
 
 #[allow(dead_code)]
 pub struct DeviceDefinition {
-    pub def: c_bindings::InputtinoDeviceDefinition,
+    pub def: ffi::InputtinoDeviceDefinition,
     // Keep those around since we are passing them as pointers
     name: CString,
     phys: CString,
@@ -15,7 +15,7 @@ impl DeviceDefinition {
         let name = CString::new(name).unwrap();
         let phys = CString::new(phys).unwrap();
         let uniq = CString::new(uniq).unwrap();
-        let def = c_bindings::InputtinoDeviceDefinition {
+        let def = ffi::InputtinoDeviceDefinition {
             name: name.as_ptr(),
             vendor_id: vendor_id,
             product_id: product_id,
@@ -60,7 +60,7 @@ macro_rules! make_device {
     ($fn_call:expr, $device:expr) => {
         {
             let mut error_str = std::ffi::CString::new("").unwrap();
-            let error_handler = crate::c_bindings::InputtinoErrorHandler {
+            let error_handler = crate::ffi::InputtinoErrorHandler {
                 eh: Some(error_handler_fn),
                 user_data: &mut error_str as *mut _ as *mut std::ffi::c_void,
             };

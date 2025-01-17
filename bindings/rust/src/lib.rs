@@ -20,8 +20,8 @@ pub use joypad_xbox::XboxOneJoypad;
 mod joypad_xbox;
 
 // Low level automatic c bindings.
-mod c_bindings;
-pub use c_bindings::{
+mod ffi;
+pub use ffi::{
     INPUTTINO_JOYPAD_STICK_POSITION as JoypadStickPosition,
     INPUTTINO_JOYPAD_BTN as JoypadButton,
     INPUTTINO_JOYPAD_MOTION_TYPE as JoypadMotionType,

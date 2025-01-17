@@ -1,5 +1,5 @@
 use std::ffi::{c_int, c_void};
-use crate::c_bindings::{
+use crate::ffi::{
     inputtino_joypad_switch_create,
     inputtino_joypad_switch_destroy,
     inputtino_joypad_switch_get_nodes,
@@ -12,7 +12,7 @@ use crate::common::{DeviceDefinition, error_handler_fn};
 use crate::{get_nodes, make_device, JoypadStickPosition};
 
 pub struct SwitchJoypad {
-    joypad: *mut crate::c_bindings::InputtinoSwitchJoypad,
+    joypad: *mut crate::ffi::InputtinoSwitchJoypad,
     on_rumble_fn: Box<dyn FnMut(i32, i32) -> ()>,
 }
 

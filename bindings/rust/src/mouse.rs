@@ -1,6 +1,6 @@
 use crate::{get_nodes, make_device};
 use crate::common::{DeviceDefinition, error_handler_fn};
-use crate::c_bindings::{
+use crate::ffi::{
     inputtino_mouse_create,
     inputtino_mouse_destroy,
     inputtino_mouse_get_nodes,
@@ -15,7 +15,7 @@ use crate::c_bindings::{
 use crate::MouseButton;
 
 pub struct Mouse {
-    mouse: *mut crate::c_bindings::InputtinoMouse,
+    mouse: *mut crate::ffi::InputtinoMouse,
 }
 
 impl Mouse {
@@ -90,7 +90,7 @@ mod tests {
         let device_name = CString::new("Rusty Mouse").unwrap();
         let device_phys = CString::new("Rusty Mouse Phys").unwrap();
         let device_uniq = CString::new("Rusty Mouse Uniq").unwrap();
-        let def = crate::c_bindings::InputtinoDeviceDefinition {
+        let def = crate::ffi::InputtinoDeviceDefinition {
             name: device_name.as_ptr(),
             vendor_id: 0,
             product_id: 0,
@@ -100,7 +100,7 @@ mod tests {
         };
         // TODO: test this somehow
         let error_str = std::ptr::null_mut();
-        let error_handler = crate::c_bindings::InputtinoErrorHandler {
+        let error_handler = crate::ffi::InputtinoErrorHandler {
             eh: Some(error_handler_fn),
             user_data: error_str,
         };

@@ -1,9 +1,9 @@
 use crate::common::{error_handler_fn, DeviceDefinition};
 use crate::{get_nodes, make_device};
-use crate::c_bindings::{inputtino_keyboard_create, inputtino_keyboard_get_nodes, inputtino_keyboard_press, inputtino_keyboard_release, inputtino_keyboard_destroy};
+use crate::ffi::{inputtino_keyboard_create, inputtino_keyboard_get_nodes, inputtino_keyboard_press, inputtino_keyboard_release, inputtino_keyboard_destroy};
 
 pub struct Keyboard {
-    kb: *mut crate::c_bindings::InputtinoKeyboard,
+    kb: *mut crate::ffi::InputtinoKeyboard,
 }
 
 impl Keyboard {
