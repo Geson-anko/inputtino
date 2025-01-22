@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::JoypadStickPosition;
 
-pub trait Joypad{
+pub trait Joypad: Send {
     fn set_pressed(&self, buttons: i32);
 
     fn set_triggers(&self, left_trigger: i16, right_trigger: i16);
