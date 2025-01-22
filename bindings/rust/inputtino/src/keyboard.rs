@@ -24,12 +24,14 @@ impl Keyboard {
     }
 
     pub fn press_key(&self, key: i16) {
+        // TODO: Export key mapping in Rust.
         unsafe {
             inputtino_keyboard_press(self.kb, key);
         }
     }
 
     pub fn release_key(&self, key: i16) {
+        // TODO: Export key mapping in Rust.
         unsafe {
             inputtino_keyboard_release(self.kb, key);
         }
