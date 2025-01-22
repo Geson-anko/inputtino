@@ -77,6 +77,8 @@ impl Drop for Mouse {
 #[cfg(test)]
 mod tests {
     use std::ffi::CString;
+    use crate::common::error_handler_fn;
+
     use super::*;
 
     #[test]
