@@ -39,7 +39,7 @@ impl DeviceDefinition {
     }
 }
 
-pub unsafe extern "C" fn error_handler_fn(
+pub(crate) unsafe extern "C" fn error_handler_fn(
     error_message: *const ::core::ffi::c_char,
     user_data: *mut ::core::ffi::c_void,
 ) {

@@ -8,7 +8,7 @@ mod keyboard;
 pub use keyboard::Keyboard;
 
 mod joypad;
-pub use joypad::{JoypadKind, Joypad};
+pub use joypad::Joypad;
 
 mod joypad_ps5;
 pub use joypad_ps5::PS5Joypad;

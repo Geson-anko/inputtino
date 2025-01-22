@@ -1,6 +1,6 @@
 use std::ffi::{c_int, c_void};
 use std::path::PathBuf;
-use crate::JoypadStickPosition;
+use crate::{Joypad, JoypadStickPosition};
 use crate::common::{get_nodes, make_device, DeviceDefinition};
 use crate::sys::{
     inputtino_joypad_ps5_create,
@@ -29,29 +29,35 @@ impl PS5Joypad {
             })
     }
 
-    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
-        get_nodes(inputtino_joypad_ps5_get_nodes, self.joypad)
+    pub fn set_on_led(&mut self, on_led_fn: impl FnMut(i32, i32, i32) + 'static) {
+        self.on_led_fn = Box::new(on_led_fn);
+        unsafe {
+            let state_ptr = self as *const _ as *mut c_void;
+            inputtino_joypad_ps5_set_on_led(self.joypad, Some(on_led_c_fn), state_ptr);
+        }
     }
+}
 
-    pub fn set_pressed(&self, buttons: i32) {
+impl Joypad for PS5Joypad {
+    fn set_pressed(&self, buttons: i32) {
         unsafe {
             inputtino_joypad_ps5_set_pressed_buttons(self.joypad, buttons);
         }
     }
 
-    pub fn set_triggers(&self, left_trigger: i16, right_trigger: i16) {
+    fn set_triggers(&self, left_trigger: i16, right_trigger: i16) {
         unsafe {
             inputtino_joypad_ps5_set_triggers(self.joypad, left_trigger, right_trigger);
         }
     }
 
-    pub fn set_stick(&self, stick_type: JoypadStickPosition, x: i16, y: i16) {
+    fn set_stick(&self, stick_type: JoypadStickPosition, x: i16, y: i16) {
         unsafe {
             inputtino_joypad_ps5_set_stick(self.joypad, stick_type, x, y);
         }
     }
 
-    pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
+    fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
         self.on_rumble_fn = Box::new(on_rumble_fn);
         unsafe {
             let state_ptr = self as *const _ as *mut c_void;
@@ -59,12 +65,8 @@ impl PS5Joypad {
         }
     }
 
-    pub fn set_on_led(&mut self, on_led_fn: impl FnMut(i32, i32, i32) + 'static) {
-        self.on_led_fn = Box::new(on_led_fn);
-        unsafe {
-            let state_ptr = self as *const _ as *mut c_void;
-            inputtino_joypad_ps5_set_on_led(self.joypad, Some(on_led_c_fn), state_ptr);
-        }
+    fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
+        get_nodes(inputtino_joypad_ps5_get_nodes, self.joypad)
     }
 }
 
@@ -76,12 +78,12 @@ impl Drop for PS5Joypad {
     }
 }
 
-pub unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, user_data: *mut ::core::ffi::c_void) {
+unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, user_data: *mut ::core::ffi::c_void) {
     let joypad: &mut PS5Joypad = &mut *(user_data as *mut PS5Joypad);
     (joypad.on_rumble_fn)(left_motor, right_motor);
 }
 
-pub unsafe extern "C" fn on_led_c_fn(r: c_int, g: c_int, b: c_int, user_data: *mut ::core::ffi::c_void) {
+unsafe extern "C" fn on_led_c_fn(r: c_int, g: c_int, b: c_int, user_data: *mut ::core::ffi::c_void) {
     let joypad: &mut PS5Joypad = &mut *(user_data as *mut PS5Joypad);
     (joypad.on_led_fn)(r, g, b);
 }

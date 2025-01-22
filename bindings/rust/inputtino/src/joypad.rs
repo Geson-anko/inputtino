@@ -1,67 +1,15 @@
-use strum_macros::FromRepr;
+use std::path::PathBuf;
 
-use crate::{
-    DeviceDefinition, JoypadStickPosition, PS5Joypad, SwitchJoypad, XboxOneJoypad
-};
+use crate::JoypadStickPosition;
 
-#[derive(Debug, FromRepr)]
-#[repr(u8)]
-pub enum JoypadKind {
-	Unknown = 0x00,
-	Xbox = 0x01,
-	PlayStation = 0x02,
-	Nintendo = 0x03,
-}
+pub trait Joypad{
+    fn set_pressed(&self, buttons: i32);
 
-#[repr(u8)]
-pub enum Joypad {
-    XOne(XboxOneJoypad),
-    PS5(PS5Joypad),
-    Switch(SwitchJoypad),
-}
+    fn set_triggers(&self, left_trigger: i16, right_trigger: i16);
 
-impl Joypad {
-    pub fn new(kind: &JoypadKind, device: &DeviceDefinition) -> Result<Joypad, String> {
-        match kind {
-            JoypadKind::Unknown | JoypadKind::Xbox => XboxOneJoypad::new(device).map(Joypad::XOne),
-            JoypadKind::PlayStation => PS5Joypad::new(device).map(Joypad::PS5),
-            JoypadKind::Nintendo => SwitchJoypad::new(device).map(Joypad::Switch),
-        }
-    }
+    fn set_stick(&self, stick_type: JoypadStickPosition, x: i16, y: i16);
 
-    pub fn new_xone(device: &DeviceDefinition) -> Result<Joypad, String> {
-        Joypad::new(&JoypadKind::Xbox, device)
-    }
+    fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static);
 
-    pub fn new_ps5(device: &DeviceDefinition) -> Result<Joypad, String> {
-        Joypad::new(&JoypadKind::PlayStation, device)
-    }
-
-    pub fn new_switch(device: &DeviceDefinition) -> Result<Joypad, String> {
-        Joypad::new(&JoypadKind::Xbox, device)
-    }
-
-    pub fn set_pressed(&self, buttons: i32) {
-        match self {
-            Joypad::XOne(joypad) => joypad.set_pressed(buttons),
-            Joypad::PS5(joypad) => joypad.set_pressed(buttons),
-            Joypad::Switch(joypad) => joypad.set_pressed(buttons),
-        }
-    }
-
-    pub fn set_triggers(&self, left_trigger: i16, right_trigger: i16) {
-        match self {
-            Joypad::XOne(joypad) => joypad.set_triggers(left_trigger, right_trigger),
-            Joypad::PS5(joypad) => joypad.set_triggers(left_trigger, right_trigger),
-            Joypad::Switch(joypad) => joypad.set_triggers(left_trigger, right_trigger),
-        }
-    }
-
-    pub fn set_stick(&self, stick_type: JoypadStickPosition, x: i16, y: i16) {
-        match self {
-            Joypad::XOne(joypad) => joypad.set_stick(stick_type, x, y),
-            Joypad::PS5(joypad) => joypad.set_stick(stick_type, x, y),
-            Joypad::Switch(joypad) => joypad.set_stick(stick_type, x, y),
-        }
-    }
+    fn get_nodes(&self) -> Result<Vec<PathBuf>, String>;
 }
