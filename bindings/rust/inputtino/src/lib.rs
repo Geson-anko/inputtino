@@ -19,11 +19,13 @@ pub use joypad_nintendo::SwitchJoypad;
 pub use joypad_xbox::XboxOneJoypad;
 mod joypad_xbox;
 
-// Low level automatic c bindings.
-mod ffi;
-pub use ffi::{
+pub use inputtino_sys::{
     INPUTTINO_JOYPAD_STICK_POSITION as JoypadStickPosition,
     INPUTTINO_JOYPAD_BTN as JoypadButton,
     INPUTTINO_JOYPAD_MOTION_TYPE as JoypadMotionType,
     INPUTTINO_MOUSE_BUTTON as MouseButton,
 };
+
+// Low level automatic c bindings.
+pub use inputtino_sys as sys;
+

@@ -28,6 +28,6 @@ impl SyncEvent for Libinput {
             }
             std::thread::sleep(std::time::Duration::from_millis(50));
         }
-        return None;
+        None
     }
 }

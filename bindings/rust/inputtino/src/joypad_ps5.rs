@@ -2,7 +2,7 @@ use std::ffi::{c_int, c_void};
 use std::path::PathBuf;
 use crate::JoypadStickPosition;
 use crate::common::{get_nodes, make_device, DeviceDefinition};
-use crate::ffi::{
+use crate::sys::{
     inputtino_joypad_ps5_create,
     inputtino_joypad_ps5_destroy,
     inputtino_joypad_ps5_get_nodes,
@@ -14,9 +14,9 @@ use crate::ffi::{
 };
 
 pub struct PS5Joypad {
-    joypad: *mut crate::ffi::InputtinoPS5Joypad,
-    on_rumble_fn: Box<dyn FnMut(i32, i32) -> ()>,
-    on_led_fn: Box<dyn FnMut(i32, i32, i32) -> ()>,
+    joypad: *mut crate::sys::InputtinoPS5Joypad,
+    on_rumble_fn: Box<dyn FnMut(i32, i32)>,
+    on_led_fn: Box<dyn FnMut(i32, i32, i32)>,
 }
 
 impl PS5Joypad {
@@ -51,7 +51,7 @@ impl PS5Joypad {
         }
     }
 
-    pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) -> () + 'static) {
+    pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
         self.on_rumble_fn = Box::new(on_rumble_fn);
         unsafe {
             let state_ptr = self as *const _ as *mut c_void;
@@ -59,7 +59,7 @@ impl PS5Joypad {
         }
     }
 
-    pub fn set_on_led(&mut self, on_led_fn: impl FnMut(i32, i32, i32) -> () + 'static) {
+    pub fn set_on_led(&mut self, on_led_fn: impl FnMut(i32, i32, i32) + 'static) {
         self.on_led_fn = Box::new(on_led_fn);
         unsafe {
             let state_ptr = self as *const _ as *mut c_void;
@@ -78,12 +78,12 @@ impl Drop for PS5Joypad {
 
 pub unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, user_data: *mut ::core::ffi::c_void) {
     let joypad: &mut PS5Joypad = &mut *(user_data as *mut PS5Joypad);
-    ((*joypad).on_rumble_fn)(left_motor, right_motor);
+    (joypad.on_rumble_fn)(left_motor, right_motor);
 }
 
 pub unsafe extern "C" fn on_led_c_fn(r: c_int, g: c_int, b: c_int, user_data: *mut ::core::ffi::c_void) {
     let joypad: &mut PS5Joypad = &mut *(user_data as *mut PS5Joypad);
-    ((*joypad).on_led_fn)(r, g, b);
+    (joypad.on_led_fn)(r, g, b);
 }
 
 unsafe impl Send for PS5Joypad { }

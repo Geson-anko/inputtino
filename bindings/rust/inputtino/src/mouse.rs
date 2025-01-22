@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use crate::common::{get_nodes, make_device, DeviceDefinition};
-use crate::ffi::{
+use crate::sys::{
     inputtino_mouse_create,
     inputtino_mouse_destroy,
     inputtino_mouse_get_nodes,
@@ -16,7 +16,7 @@ use crate::ffi::{
 use crate::MouseButton;
 
 pub struct Mouse {
-    mouse: *mut crate::ffi::InputtinoMouse,
+    mouse: *mut crate::sys::InputtinoMouse,
 }
 
 impl Mouse {
@@ -74,6 +74,8 @@ impl Drop for Mouse {
     }
 }
 
+unsafe impl Send for Mouse { }
+
 #[cfg(test)]
 mod tests {
     use std::ffi::CString;
@@ -86,7 +88,7 @@ mod tests {
         let device_name = CString::new("Rusty Mouse").unwrap();
         let device_phys = CString::new("Rusty Mouse Phys").unwrap();
         let device_uniq = CString::new("Rusty Mouse Uniq").unwrap();
-        let def = crate::ffi::InputtinoDeviceDefinition {
+        let def = crate::sys::InputtinoDeviceDefinition {
             name: device_name.as_ptr(),
             vendor_id: 0,
             product_id: 0,
@@ -96,7 +98,7 @@ mod tests {
         };
         // TODO: test this somehow
         let error_str = std::ptr::null_mut();
-        let error_handler = crate::ffi::InputtinoErrorHandler {
+        let error_handler = crate::sys::InputtinoErrorHandler {
             eh: Some(error_handler_fn),
             user_data: error_str,
         };
@@ -117,5 +119,3 @@ mod tests {
         }
     }
 }
-
-unsafe impl Send for Mouse { }

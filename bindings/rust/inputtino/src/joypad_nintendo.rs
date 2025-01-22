@@ -1,6 +1,6 @@
 use std::ffi::{c_int, c_void};
 use std::path::PathBuf;
-use crate::ffi::{
+use crate::sys::{
     inputtino_joypad_switch_create,
     inputtino_joypad_switch_destroy,
     inputtino_joypad_switch_get_nodes,
@@ -13,8 +13,8 @@ use crate::common::{get_nodes, make_device, DeviceDefinition};
 use crate::JoypadStickPosition;
 
 pub struct SwitchJoypad {
-    joypad: *mut crate::ffi::InputtinoSwitchJoypad,
-    on_rumble_fn: Box<dyn FnMut(i32, i32) -> ()>,
+    joypad: *mut crate::sys::InputtinoSwitchJoypad,
+    on_rumble_fn: Box<dyn FnMut(i32, i32)>,
 }
 
 impl SwitchJoypad {
@@ -45,7 +45,7 @@ impl SwitchJoypad {
         }
     }
 
-    pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) -> () + 'static) {
+    pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
         self.on_rumble_fn = Box::new(on_rumble_fn);
         unsafe {
             let state_ptr = self as *const _ as *mut c_void;
@@ -65,7 +65,7 @@ impl Drop for SwitchJoypad {
 #[allow(dead_code)]
 pub unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, user_data: *mut ::core::ffi::c_void) {
     let joypad: &mut SwitchJoypad = &mut *(user_data as *mut SwitchJoypad);
-    ((*joypad).on_rumble_fn)(left_motor, right_motor);
+    (joypad.on_rumble_fn)(left_motor, right_motor);
 }
 
 unsafe impl Send for SwitchJoypad { }

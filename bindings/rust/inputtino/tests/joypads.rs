@@ -18,8 +18,8 @@ fn test_xone_joypad() {
     let nodes = joypad.get_nodes().unwrap();
     {
         assert_eq!(nodes.len(), 2);
-        assert!(nodes[0].starts_with("/dev/input/event"));
-        assert!(nodes[1].starts_with("/dev/input/js"));
+        assert!(nodes[0].to_str().expect("valid utf-8").starts_with("/dev/input/event"));
+        assert!(nodes[1].to_str().expect("valid utf-8").starts_with("/dev/input/js"));
     }
 
     // Sleep to let the system detect the new device
@@ -157,8 +157,8 @@ fn test_switch_joypad() {
     let nodes = joypad.get_nodes().unwrap();
     {
         assert_eq!(nodes.len(), 2);
-        assert!(nodes[0].starts_with("/dev/input/event"));
-        assert!(nodes[1].starts_with("/dev/input/js"));
+        assert!(nodes[0].to_str().expect("valid utf-8").starts_with("/dev/input/event"));
+        assert!(nodes[1].to_str().expect("valid utf-8").starts_with("/dev/input/js"));
     }
 
     // Sleep to let the system detect the anew device

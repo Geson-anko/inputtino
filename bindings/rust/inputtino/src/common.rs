@@ -1,9 +1,9 @@
-use crate::ffi::{self, InputtinoDeviceDefinition, InputtinoErrorHandler};
+use crate::sys::{InputtinoDeviceDefinition, InputtinoErrorHandler};
 use std::{ffi::CString, path::PathBuf};
 
 #[allow(dead_code)]
 pub struct DeviceDefinition {
-    pub def: ffi::InputtinoDeviceDefinition,
+    pub def: InputtinoDeviceDefinition,
     // Keep those around since we are passing them as pointers
     name: CString,
     phys: CString,
@@ -22,7 +22,7 @@ impl DeviceDefinition {
         let name = CString::new(name).unwrap();
         let phys = CString::new(phys).unwrap();
         let uniq = CString::new(uniq).unwrap();
-        let def = ffi::InputtinoDeviceDefinition {
+        let def = InputtinoDeviceDefinition {
             name: name.as_ptr(),
             vendor_id,
             product_id,
@@ -82,7 +82,7 @@ pub(crate) fn make_device<T>(
     definition: &DeviceDefinition,
 ) -> Result<*mut T, String> {
     let mut error_str = std::ffi::CString::default();
-    let error_handler = crate::ffi::InputtinoErrorHandler {
+    let error_handler = InputtinoErrorHandler {
         eh: Some(error_handler_fn),
         user_data: &mut error_str as *mut _ as *mut std::ffi::c_void,
     };

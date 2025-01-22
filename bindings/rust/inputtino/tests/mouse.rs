@@ -27,8 +27,8 @@ fn test_inputtino_mouse() {
     }
 
     let mut input = Libinput::new_from_path(NixInterface);
-    let dev_rel = input.path_add_device(nodes[0].as_str()).expect("to get the device");
-    let dev_abs = input.path_add_device(nodes[1].as_str()).expect("to get the device");
+    let dev_rel = input.path_add_device(nodes[0].to_str().expect("valid utf-8")).expect("to get the device");
+    let dev_abs = input.path_add_device(nodes[1].to_str().expect("valid utf-8")).expect("to get the device");
 
     {
         assert_eq!(dev_rel.name(), "Rusty Mouse");

@@ -1,10 +1,16 @@
 use std::path::PathBuf;
 
 use crate::common::{get_nodes, make_device, DeviceDefinition};
-use crate::ffi::{inputtino_keyboard_create, inputtino_keyboard_get_nodes, inputtino_keyboard_press, inputtino_keyboard_release, inputtino_keyboard_destroy};
+use crate::sys::{
+    inputtino_keyboard_create,
+    inputtino_keyboard_get_nodes,
+    inputtino_keyboard_press,
+    inputtino_keyboard_release,
+    inputtino_keyboard_destroy
+};
 
 pub struct Keyboard {
-    kb: *mut crate::ffi::InputtinoKeyboard,
+    kb: *mut crate::sys::InputtinoKeyboard,
 }
 
 impl Keyboard {

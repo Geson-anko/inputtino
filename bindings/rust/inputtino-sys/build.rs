@@ -9,10 +9,10 @@ fn main() {
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         })
-        .clang_arg("-D INPUTTINO_STATIC_DEFINE=1")
-        .header("wrapper.hpp");
+        .clang_arg("-DINPUTTINO_STATIC_DEFINE=1")
+        .header("wrapper.h");
 
-    let libdir_path = PathBuf::from("../../")
+    let libdir_path = PathBuf::from("../../../")
         // Canonicalize the path as `rustc-link-search` requires an absolute
         // path.
         .canonicalize()

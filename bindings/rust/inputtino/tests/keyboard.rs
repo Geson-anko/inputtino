@@ -17,12 +17,12 @@ fn test_inputtino_keyboard() {
     {
         assert_eq!(nodes.len(), 1);
 
-        // Check that the nodes start with /dev/input/event
-        assert!(nodes[0].starts_with("/dev/input/event"));
+        // Check that the node start with /dev/input/event
+        assert!(nodes[0].to_str().expect("valid utf-8").starts_with("/dev/input/event"));
     }
 
     let mut input = Libinput::new_from_path(NixInterface);
-    let kb_dev = input.path_add_device(nodes[0].as_str()).expect("to get the device");
+    let kb_dev = input.path_add_device(nodes[0].to_str().expect("valid utf-8")).expect("to get the device");
 
     {
         assert_eq!(kb_dev.name(), "Rusty Keyboard");
@@ -36,10 +36,10 @@ fn test_inputtino_keyboard() {
     { // Test keyboard key press
         keyboard.press_key(0x41); // KEY_A
 
-        let ev = input.wait_next_event().unwrap();
-        assert!(matches!(ev, Event::Keyboard(_)));
+        let ev = input.wait_next_event();
+        assert!(matches!(ev, Some(Event::Keyboard(_))));
         match ev {
-            Event::Keyboard(ev) => {
+            Some(Event::Keyboard(ev)) => {
                 assert_eq!(ev.key(), 30); // KEY_A
                 assert_eq!(ev.key_state(), input::event::keyboard::KeyState::Pressed);
             }
