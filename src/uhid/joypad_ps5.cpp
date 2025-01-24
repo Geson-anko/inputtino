@@ -186,10 +186,13 @@ template <typename T> std::string to_hex(T i) {
 
 std::string PS5Joypad::get_mac_address() const {
   std::stringstream stream;
-  stream << std::hex << std::setfill('0') << std::setw(2) //
-         << (unsigned int)_state->mac_address[0] << ":" << (unsigned int)_state->mac_address[1] << ":"
-         << (unsigned int)_state->mac_address[2] << ":" << (unsigned int)_state->mac_address[3] << ":"
-         << (unsigned int)_state->mac_address[4] << ":" << (unsigned int)_state->mac_address[5];
+  stream << std::hex << std::setfill('0')
+         << std::setw(2) << (unsigned int)_state->mac_address[0] << ":"
+         << std::setw(2) << (unsigned int)_state->mac_address[1] << ":"
+         << std::setw(2) << (unsigned int)_state->mac_address[2] << ":"
+         << std::setw(2) << (unsigned int)_state->mac_address[3] << ":"
+         << std::setw(2) << (unsigned int)_state->mac_address[4] << ":"
+         << std::setw(2) << (unsigned int)_state->mac_address[5];
   return stream.str();
 }
 
