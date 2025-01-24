@@ -115,6 +115,12 @@ if (UNIX AND NOT APPLE)
             "src/uinput/joypad_utils.hpp"
             "src/uhid/joypad_ps5.cpp")
     target_include_directories(libinputtino PUBLIC "src/uinput/include" "src/uhid/include/")
+
+    # Find zlib libraries
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(ZLIB REQUIRED IMPORTED_TARGET zlib)
+
+    target_link_libraries(libinputtino PUBLIC PkgConfig::ZLIB)
 endif ()
 
 if (BUILD_SERVER)

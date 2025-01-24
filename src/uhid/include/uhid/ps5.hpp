@@ -23,6 +23,14 @@ static constexpr int PS5_TOUCHPAD_WIDTH = 1920;
 static constexpr int PS5_TOUCHPAD_HEIGHT = 1080;
 static constexpr float SDL_STANDARD_GRAVITY = 9.80665f;
 
+/*
+ * Bluetooth constants,
+ * https://github.com/torvalds/linux/blob/305230142ae0637213bf6e04f6d9f10bbcb74af8/drivers/hid/hid-playstation.c#L70-L72
+ */
+static constexpr unsigned char PS_INPUT_CRC32_SEED = 0xA1;
+static constexpr unsigned char PS_OUTPUT_CRC32_SEED = 0xA2;
+static constexpr unsigned char PS_FEATURE_CRC32_SEED = 0xA3;
+
 /**
  * Taken from: https://github.com/nondebug/dualsense/blob/main/report-descriptor-usb.txt
  * and verified manually using hid-decode
@@ -164,6 +172,146 @@ static constexpr unsigned char ps5_rdesc[] = {
     0xC0,             // End Collection
 };
 
+/**
+ * Taken from https://github.com/nondebug/dualsense/blob/main/report-descriptor-bluetooth.txt
+ */
+static constexpr unsigned char ps5_rdesc_bt[] = {
+    0x05, 0x01,       // Usage Page (Generic Desktop Ctrls)
+    0x09, 0x05,       // Usage (Game Pad)
+    0xA1, 0x01,       // Collection (Application)
+    0x85, 0x01,       //   Report ID (1)
+    0x09, 0x30,       //   Usage (X)
+    0x09, 0x31,       //   Usage (Y)
+    0x09, 0x32,       //   Usage (Z)
+    0x09, 0x35,       //   Usage (Rz)
+    0x15, 0x00,       //   Logical Minimum (0)
+    0x26, 0xFF, 0x00, //   Logical Maximum (255)
+    0x75, 0x08,       //   Report Size (8)
+    0x95, 0x04,       //   Report Count (4)
+    0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    0x09, 0x39,       //   Usage (Hat switch)
+    0x15, 0x00,       //   Logical Minimum (0)
+    0x25, 0x07,       //   Logical Maximum (7)
+    0x35, 0x00,       //   Physical Minimum (0)
+    0x46, 0x3B, 0x01, //   Physical Maximum (315)
+    0x65, 0x14,       //   Unit (System: English Rotation, Length: Centimeter)
+    0x75, 0x04,       //   Report Size (4)
+    0x95, 0x01,       //   Report Count (1)
+    0x81, 0x42,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,Null State)
+    0x65, 0x00,       //   Unit (None)
+    0x05, 0x09,       //   Usage Page (Button)
+    0x19, 0x01,       //   Usage Minimum (0x01)
+    0x29, 0x0E,       //   Usage Maximum (0x0E)
+    0x15, 0x00,       //   Logical Minimum (0)
+    0x25, 0x01,       //   Logical Maximum (1)
+    0x75, 0x01,       //   Report Size (1)
+    0x95, 0x0E,       //   Report Count (14)
+    0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    0x75, 0x06,       //   Report Size (6)
+    0x95, 0x01,       //   Report Count (1)
+    0x81, 0x01,       //   Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    0x05, 0x01,       //   Usage Page (Generic Desktop Ctrls)
+    0x09, 0x33,       //   Usage (Rx)
+    0x09, 0x34,       //   Usage (Ry)
+    0x15, 0x00,       //   Logical Minimum (0)
+    0x26, 0xFF, 0x00, //   Logical Maximum (255)
+    0x75, 0x08,       //   Report Size (8)
+    0x95, 0x02,       //   Report Count (2)
+    0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    0x06, 0x00, 0xFF, //   Usage Page (Vendor Defined 0xFF00)
+    0x15, 0x00,       //   Logical Minimum (0)
+    0x26, 0xFF, 0x00, //   Logical Maximum (255)
+    0x75, 0x08,       //   Report Size (8)
+    0x95, 0x4D,       //   Report Count (77)
+    0x85, 0x31,       //   Report ID (49)
+    0x09, 0x31,       //   Usage (0x31)
+    0x91, 0x02,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x09, 0x3B,       //   Usage (0x3B)
+    0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    0x85, 0x32,       //   Report ID (50)
+    0x09, 0x32,       //   Usage (0x32)
+    0x95, 0x8D,       //   Report Count (-115)
+    0x91, 0x02,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x33,       //   Report ID (51)
+    0x09, 0x33,       //   Usage (0x33)
+    0x95, 0xCD,       //   Report Count (-51)
+    0x91, 0x02,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x34,       //   Report ID (52)
+    0x09, 0x34,       //   Usage (0x34)
+    0x96, 0x0D, 0x01, //   Report Count (269)
+    0x91, 0x02,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x35,       //   Report ID (53)
+    0x09, 0x35,       //   Usage (0x35)
+    0x96, 0x4D, 0x01, //   Report Count (333)
+    0x91, 0x02,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x36,       //   Report ID (54)
+    0x09, 0x36,       //   Usage (0x36)
+    0x96, 0x8D, 0x01, //   Report Count (397)
+    0x91, 0x02,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x37,       //   Report ID (55)
+    0x09, 0x37,       //   Usage (0x37)
+    0x96, 0xCD, 0x01, //   Report Count (461)
+    0x91, 0x02,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x38,       //   Report ID (56)
+    0x09, 0x38,       //   Usage (0x38)
+    0x96, 0x0D, 0x02, //   Report Count (525)
+    0x91, 0x02,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x39,       //   Report ID (57)
+    0x09, 0x39,       //   Usage (0x39)
+    0x96, 0x22, 0x02, //   Report Count (546)
+    0x91, 0x02,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x06, 0x80, 0xFF, //   Usage Page (Vendor Defined 0xFF80)
+    0x85, 0x05,       //   Report ID (5)
+    0x09, 0x33,       //   Usage (0x33)
+    0x95, 0x28,       //   Report Count (40)
+    0xB1, 0x02,       //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x08,       //   Report ID (8)
+    0x09, 0x34,       //   Usage (0x34)
+    0x95, 0x2F,       //   Report Count (47)
+    0xB1, 0x02,       //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x09,       //   Report ID (9)
+    0x09, 0x24,       //   Usage (0x24)
+    0x95, 0x13,       //   Report Count (19)
+    0xB1, 0x02,       //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x20,       //   Report ID (32)
+    0x09, 0x26,       //   Usage (0x26)
+    0x95, 0x3F,       //   Report Count (63)
+    0xB1, 0x02,       //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x22,       //   Report ID (34)
+    0x09, 0x40,       //   Usage (0x40)
+    0x95, 0x3F,       //   Report Count (63)
+    0xB1, 0x02,       //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x80,       //   Report ID (-128)
+    0x09, 0x28,       //   Usage (0x28)
+    0x95, 0x3F,       //   Report Count (63)
+    0xB1, 0x02,       //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x81,       //   Report ID (-127)
+    0x09, 0x29,       //   Usage (0x29)
+    0x95, 0x3F,       //   Report Count (63)
+    0xB1, 0x02,       //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x82,       //   Report ID (-126)
+    0x09, 0x2A,       //   Usage (0x2A)
+    0x95, 0x09,       //   Report Count (9)
+    0xB1, 0x02,       //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0x83,       //   Report ID (-125)
+    0x09, 0x2B,       //   Usage (0x2B)
+    0x95, 0x3F,       //   Report Count (63)
+    0xB1, 0x02,       //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0xF1,       //   Report ID (-15)
+    0x09, 0x31,       //   Usage (0x31)
+    0x95, 0x3F,       //   Report Count (63)
+    0xB1, 0x02,       //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0xF2,       //   Report ID (-14)
+    0x09, 0x32,       //   Usage (0x32)
+    0x95, 0x0F,       //   Report Count (15)
+    0xB1, 0x02,       //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0xF0,       //   Report ID (-16)
+    0x09, 0x30,       //   Usage (0x30)
+    0x95, 0x3F,       //   Report Count (63)
+    0xB1, 0x02,       //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0xC0,             // End Collection
+};
+
 enum PS5_REPORT_TYPES : unsigned int {
   CALIBRATION = 0x05,
   PAIRING_INFO = 0x09,
@@ -222,6 +370,7 @@ static constexpr unsigned char ps5_pairing_info[] = {
     0x1E, 0x00, 0xEE, 0x74, 0xD0, 0xBC, 0x00, 0x00, 0x00, 0x00,
 };
 
+#pragma pack(push, 1)
 struct dualsense_touch_point {
   /*
    * Status of a DualShock4 touch point contact.
@@ -277,8 +426,18 @@ enum HAT_STATES : uint8_t {
   HAT_NW = 0x7
 };
 
-struct dualsense_input_report_usb {
+struct dualsense_input_report_usb_header {
   uint8_t report_id = 0x01;
+};
+
+struct dualsense_input_report_bt_header {
+  uint8_t report_id = 0x31;
+  uint8_t reserved;
+};
+
+constexpr size_t PS_INPUT_REPORT_BT_OFFSET = 13;
+
+struct dualsense_input_report {
   uint8_t x, y = PS5_AXIS_NEUTRAL;   // LS
   uint8_t rx, ry = PS5_AXIS_NEUTRAL; // RS
   uint8_t z, rz = PS5_AXIS_NEUTRAL;  // L2, R2
@@ -326,11 +485,10 @@ enum FLAG2 : uint8_t {
   COMPATIBLE_VIBRATION = 0x04
 };
 
-struct dualsense_output_report_usb {
-  uint8_t report_id; // 0x02 for USB
-
-  uint8_t valid_flag0; // see enum FLAG0
-  uint8_t valid_flag1; // see enum FLAG1
+/* Common data between DualSense BT/USB main output report. */
+struct dualsense_output_report_common {
+  uint8_t valid_flag0;
+  uint8_t valid_flag1;
 
   /* For DualShock 4 compatibility mode. */
   uint8_t motor_right;
@@ -344,7 +502,7 @@ struct dualsense_output_report_usb {
   uint8_t reserved2[28];
 
   /* LEDs and lightbar */
-  uint8_t valid_flag2; // see enum FLAG2
+  uint8_t valid_flag2;
   uint8_t reserved3[2];
   uint8_t lightbar_setup;
   uint8_t led_brightness;
@@ -352,7 +510,25 @@ struct dualsense_output_report_usb {
   uint8_t lightbar_red;
   uint8_t lightbar_green;
   uint8_t lightbar_blue;
-
-  uint8_t reserved4[15];
 };
+
+static constexpr uint8_t DS_OUTPUT_REPORT_USB = 0x02;
+
+struct dualsense_output_report_usb {
+  uint8_t report_id; /* 0x02 */
+  struct dualsense_output_report_common common;
+  uint8_t reserved[15];
+};
+
+static constexpr uint8_t DS_OUTPUT_REPORT_BT = 0x31;
+
+struct dualsense_output_report_bt {
+  uint8_t report_id; /* 0x31 */
+  uint8_t seq_tag;
+  struct dualsense_output_report_common common;
+  uint8_t reserved[24];
+  __le32 crc32;
+};
+#pragma pack(pop)
+
 } // namespace uhid

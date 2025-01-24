@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace inputtino {
@@ -432,6 +433,7 @@ protected:
   std::shared_ptr<PS5JoypadState> _state;
 
 private:
+  std::thread _send_input_thread;
   PS5Joypad(uint16_t vendor_id);
 };
 } // namespace inputtino
