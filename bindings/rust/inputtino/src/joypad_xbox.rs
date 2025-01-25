@@ -55,6 +55,10 @@ impl Joypad for XboxOneJoypad {
     fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
         get_nodes(inputtino_joypad_xone_get_nodes, self.joypad)
     }
+
+    fn place_finger(&self, _pointer_id: u32, _x: u16, _y: u16) { }
+
+    fn release_finger(&self, pointer_id: u32) { }
 }
 
 impl Drop for XboxOneJoypad {

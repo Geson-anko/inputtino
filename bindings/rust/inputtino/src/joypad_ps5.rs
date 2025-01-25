@@ -1,5 +1,7 @@
 use std::ffi::{c_int, c_void};
 use std::path::PathBuf;
+use inputtino_sys::{inputtino_joypad_ps5_place_finger, inputtino_joypad_ps5_release_finger};
+
 use crate::{Joypad, JoypadStickPosition};
 use crate::common::{get_nodes, make_device, DeviceDefinition};
 use crate::sys::{
@@ -20,6 +22,10 @@ pub struct PS5Joypad {
 }
 
 impl PS5Joypad {
+    // TODO: Expose in C API and use the binding.
+    pub const TOUCHPAD_WIDTH: i32 = 1920;
+    pub const TOUCHPAD_HEIGHT: i32 = 1080;
+
     pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
         make_device(inputtino_joypad_ps5_create, device)
             .map(|joypad| PS5Joypad {
@@ -67,6 +73,18 @@ impl Joypad for PS5Joypad {
 
     fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
         get_nodes(inputtino_joypad_ps5_get_nodes, self.joypad)
+    }
+
+    fn place_finger(&self, finger_id: u32, x: u16, y: u16) {
+        unsafe {
+            inputtino_joypad_ps5_place_finger(self.joypad, finger_id as i32, x, y);
+        }
+    }
+
+    fn release_finger(&self, finger_id: u32) {
+        unsafe {
+            inputtino_joypad_ps5_release_finger(self.joypad, finger_id as i32);
+        }
     }
 }
 

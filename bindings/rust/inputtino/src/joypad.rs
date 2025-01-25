@@ -12,4 +12,8 @@ pub trait Joypad: Send {
     fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static);
 
     fn get_nodes(&self) -> Result<Vec<PathBuf>, String>;
+
+    fn place_finger(&self, pointer_id: u32, x: u16, y: u16);
+
+    fn release_finger(&self, pointer_id: u32);
 }
