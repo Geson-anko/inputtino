@@ -577,8 +577,8 @@ TEST_CASE_METHOD(SDLTestsFixture, "Nintendo Joypad", "[SDL]") {
 
 TEST_CASE("Bluetooth CRC32", "[PS]") {
   std::string buffer = "123456789";
-  auto crc = CRC32(reinterpret_cast<unsigned char *>(buffer.data()), buffer.length());
-  REQUIRE(crc == 0xcbf43926);
+  auto crc = CRC32(reinterpret_cast<const unsigned char *>(buffer.data()), buffer.length());
+  REQUIRE(crc == 0xcbf43926); // https://crccalc.com/?crc=123456789&method=CRC-32/ISO-HDLC&datatype=ascii&outtype=hex
 
   unsigned char PS_INPUT_CRC32_SEED = 0xA1;
   auto crc2 = CRC32(&PS_INPUT_CRC32_SEED, 1, 0xFFFFFFFF);

@@ -14,9 +14,8 @@
 
 namespace inputtino {
 
-static uint32_t sign_crc32(const unsigned char seed, const unsigned char *buffer, size_t length) {
-  auto crc = CRC32(&seed, 1);
-  crc = CRC32(buffer, length, crc);
+static uint32_t sign_crc32(uint32_t seed, const unsigned char *buffer, size_t length) {
+  auto crc = CRC32(buffer, length, seed);
   crc = htole32(crc); // Convert to little endian
   return crc;
 }
@@ -65,7 +64,7 @@ static void send_report(PS5JoypadState &state) {
     ev.u.input2.size += uhid::PS_INPUT_REPORT_BT_OFFSET;
 
     auto end_of_msg = ev.u.input2.size - 4; // (Last 4 bytes contains crc32)
-    auto crc = sign_crc32(uhid::PS_INPUT_CRC32_SEED, &ev.u.input2.data[0], end_of_msg);
+    auto crc = sign_crc32(uhid::PS_INPUT_CRC32, &ev.u.input2.data[0], end_of_msg);
     std::copy(reinterpret_cast<unsigned char *>(&crc),
               reinterpret_cast<unsigned char *>(&crc) + 4,
               &ev.u.input2.data[end_of_msg]);
@@ -117,7 +116,7 @@ static void on_uhid_event(std::shared_ptr<PS5JoypadState> state, uhid_event ev, 
     if (state->is_bluetooth) {
       // CRC32 encode the data and append it to the reply
       auto end_of_msg = answer.u.get_report_reply.size - 4; // (Last 4 bytes contains crc32)
-      auto crc = sign_crc32(uhid::PS_FEATURE_CRC32_SEED, &answer.u.get_report_reply.data[0], end_of_msg);
+      auto crc = sign_crc32(uhid::PS_FEATURE_CRC32, &answer.u.get_report_reply.data[0], end_of_msg);
       std::copy(reinterpret_cast<unsigned char *>(&crc),
                 reinterpret_cast<unsigned char *>(&crc) + 4,
                 &answer.u.get_report_reply.data[end_of_msg]);

@@ -2,6 +2,7 @@
 
 #include <linux/uhid.h>
 #include <vector>
+#include <crc32.hpp>
 
 namespace uhid {
 
@@ -28,8 +29,11 @@ static constexpr float SDL_STANDARD_GRAVITY = 9.80665f;
  * https://github.com/torvalds/linux/blob/305230142ae0637213bf6e04f6d9f10bbcb74af8/drivers/hid/hid-playstation.c#L70-L72
  */
 static constexpr unsigned char PS_INPUT_CRC32_SEED = 0xA1;
+static constexpr auto PS_INPUT_CRC32= CRC32(&PS_INPUT_CRC32_SEED, 1);
 static constexpr unsigned char PS_OUTPUT_CRC32_SEED = 0xA2;
+static constexpr auto PS_OUTPUT_CRC32 = CRC32(&PS_OUTPUT_CRC32_SEED, 1);
 static constexpr unsigned char PS_FEATURE_CRC32_SEED = 0xA3;
+static constexpr auto PS_FEATURE_CRC32 = CRC32(&PS_FEATURE_CRC32_SEED, 1);
 
 /**
  * Taken from: https://github.com/nondebug/dualsense/blob/main/report-descriptor-usb.txt
