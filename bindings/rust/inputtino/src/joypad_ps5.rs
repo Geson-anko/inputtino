@@ -2,7 +2,7 @@ use std::ffi::{c_int, c_void};
 use std::path::PathBuf;
 use inputtino_sys::{inputtino_joypad_ps5_place_finger, inputtino_joypad_ps5_release_finger};
 
-use crate::{Joypad, JoypadStickPosition};
+use crate::JoypadStickPosition;
 use crate::common::{get_nodes, make_device, DeviceDefinition};
 use crate::sys::{
     inputtino_joypad_ps5_create,
@@ -42,28 +42,26 @@ impl PS5Joypad {
             inputtino_joypad_ps5_set_on_led(self.joypad, Some(on_led_c_fn), state_ptr);
         }
     }
-}
 
-impl Joypad for PS5Joypad {
-    fn set_pressed(&self, buttons: i32) {
+    pub fn set_pressed(&self, buttons: i32) {
         unsafe {
             inputtino_joypad_ps5_set_pressed_buttons(self.joypad, buttons);
         }
     }
 
-    fn set_triggers(&self, left_trigger: i16, right_trigger: i16) {
+    pub fn set_triggers(&self, left_trigger: i16, right_trigger: i16) {
         unsafe {
             inputtino_joypad_ps5_set_triggers(self.joypad, left_trigger, right_trigger);
         }
     }
 
-    fn set_stick(&self, stick_type: JoypadStickPosition, x: i16, y: i16) {
+    pub fn set_stick(&self, stick_type: JoypadStickPosition, x: i16, y: i16) {
         unsafe {
             inputtino_joypad_ps5_set_stick(self.joypad, stick_type, x, y);
         }
     }
 
-    fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
+    pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
         self.on_rumble_fn = Box::new(on_rumble_fn);
         unsafe {
             let state_ptr = self as *const _ as *mut c_void;
@@ -71,17 +69,17 @@ impl Joypad for PS5Joypad {
         }
     }
 
-    fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
+    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
         get_nodes(inputtino_joypad_ps5_get_nodes, self.joypad)
     }
 
-    fn place_finger(&self, finger_id: u32, x: u16, y: u16) {
+    pub fn place_finger(&self, finger_id: u32, x: u16, y: u16) {
         unsafe {
             inputtino_joypad_ps5_place_finger(self.joypad, finger_id as i32, x, y);
         }
     }
 
-    fn release_finger(&self, finger_id: u32) {
+    pub fn release_finger(&self, finger_id: u32) {
         unsafe {
             inputtino_joypad_ps5_release_finger(self.joypad, finger_id as i32);
         }
