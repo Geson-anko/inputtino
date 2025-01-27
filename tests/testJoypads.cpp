@@ -173,27 +173,6 @@ TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL],[PS]") {
     REQUIRE(rumble_data->second == 0x7878);
   }
 
-  { // LED
-    REQUIRE(SDL_GameControllerHasLED(gc));
-    struct LED {
-      int r;
-      int g;
-      int b;
-    };
-    auto led_data = std::make_shared<LED>();
-    joypad.set_on_led([led_data](int r, int g, int b) {
-      led_data->r = r;
-      led_data->g = g;
-      led_data->b = b;
-    });
-    SDL_GameControllerSetLED(gc, 50, 100, 150);
-    // TODO: doesn't work
-    // std::this_thread::sleep_for(100ms); // wait for the effect to be picked up
-    // REQUIRE(led_data->r == 50);
-    // REQUIRE(led_data->g == 100);
-    // REQUIRE(led_data->b == 150);
-  }
-
   test_buttons(gc, joypad);
   { // Sticks
     REQUIRE(SDL_GameControllerHasAxis(gc, SDL_CONTROLLER_AXIS_LEFTX));
@@ -344,6 +323,26 @@ TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL],[PS]") {
     flush_sdl_events();
   }
 
+  { // LED TODO: seems that this only works after some gyro/acceleration data is sent
+    REQUIRE(SDL_GameControllerHasLED(gc));
+    struct LED {
+      int r;
+      int g;
+      int b;
+    };
+    auto led_data = std::make_shared<LED>();
+    joypad.set_on_led([led_data](int r, int g, int b) {
+      led_data->r = r;
+      led_data->g = g;
+      led_data->b = b;
+    });
+    REQUIRE(SDL_GameControllerSetLED(gc, 50, 100, 150) == 0);
+    std::this_thread::sleep_for(20ms); // wait for the effect to be picked up
+    REQUIRE(led_data->r == 50);
+    REQUIRE(led_data->g == 100);
+    REQUIRE(led_data->b == 150);
+  }
+
   { // Test touchpad
     REQUIRE(SDL_GameControllerGetNumTouchpads(gc) == 1);
     REQUIRE(SDL_GameControllerGetNumTouchpadFingers(gc, 0) == 2);
@@ -357,8 +356,7 @@ TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL],[PS]") {
 
   { // Test battery
     auto joy = SDL_GameControllerGetJoystick(gc);
-    auto level = SDL_JoystickCurrentPowerLevel(joy);
-    REQUIRE(level == SDL_JOYSTICK_POWER_FULL);
+    REQUIRE(SDL_JoystickCurrentPowerLevel(joy) == SDL_JOYSTICK_POWER_FULL);
 
     auto base_path =
         std::filesystem::path(
