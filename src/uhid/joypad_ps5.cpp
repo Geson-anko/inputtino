@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <climits>
 #include <cmath>
+#include <crc32.hpp>
 #include <endian.h>
 #include <filesystem>
 #include <fstream>
@@ -12,6 +13,12 @@
 #include <uhid/uhid.hpp>
 
 namespace inputtino {
+
+static uint32_t sign_crc32(uint32_t seed, const unsigned char *buffer, size_t length) {
+  auto crc = CRC32(buffer, length, seed);
+  crc = htole32(crc); // Convert to little endian
+  return crc;
+}
 
 static void send_report(PS5JoypadState &state) {
   { // setup timestamp and increase seq_number
@@ -28,13 +35,41 @@ static void send_report(PS5JoypadState &state) {
     state.current_state.sensor_timestamp = htole32(now / 333);
   }
 
-  struct uhid_event ev {};
+  struct uhid_event ev{};
   {
     ev.type = UHID_INPUT2;
+
+    std::size_t header_size;
+    if (state.is_bluetooth) {
+      auto header = uhid::dualsense_input_report_bt_header{};
+      header_size = sizeof(header);
+      std::copy(reinterpret_cast<unsigned char *>(&header),
+                reinterpret_cast<unsigned char *>(&header) + header_size,
+                &ev.u.input2.data[0]);
+    } else {
+      auto header = uhid::dualsense_input_report_usb_header{};
+      header_size = sizeof(header);
+      std::copy(reinterpret_cast<unsigned char *>(&header),
+                reinterpret_cast<unsigned char *>(&header) + header_size,
+                &ev.u.input2.data[0]);
+    }
+
     unsigned char *data = (unsigned char *)&state.current_state;
-    std::copy(data, data + sizeof(state.current_state), &ev.u.input2.data[0]);
-    ev.u.input2.size = sizeof(state.current_state);
+    std::copy(data, data + sizeof(state.current_state), &ev.u.input2.data[header_size]);
+
+    ev.u.input2.size = header_size + sizeof(state.current_state);
   }
+
+  if (state.is_bluetooth) { // CRC32 encode the data and append it to the reply
+    ev.u.input2.size += uhid::PS_INPUT_REPORT_BT_OFFSET;
+
+    auto end_of_msg = ev.u.input2.size - 4; // (Last 4 bytes contains crc32)
+    auto crc = sign_crc32(uhid::PS_INPUT_CRC32, &ev.u.input2.data[0], end_of_msg);
+    std::copy(reinterpret_cast<unsigned char *>(&crc),
+              reinterpret_cast<unsigned char *>(&crc) + 4,
+              &ev.u.input2.data[end_of_msg]);
+  }
+
   state.dev->send(ev);
 }
 
@@ -77,25 +112,45 @@ static void on_uhid_event(std::shared_ptr<PS5JoypadState> state, uhid_event ev, 
       answer.u.get_report_reply.err = -EINVAL;
       break;
     }
+
+    if (state->is_bluetooth) {
+      // CRC32 encode the data and append it to the reply
+      auto end_of_msg = answer.u.get_report_reply.size - 4; // (Last 4 bytes contains crc32)
+      auto crc = sign_crc32(uhid::PS_FEATURE_CRC32, &answer.u.get_report_reply.data[0], end_of_msg);
+      std::copy(reinterpret_cast<unsigned char *>(&crc),
+                reinterpret_cast<unsigned char *>(&crc) + 4,
+                &answer.u.get_report_reply.data[end_of_msg]);
+    }
+
     auto res = uhid::uhid_write(fd, &answer);
     // TODO: signal error somehow
     break;
   }
   case UHID_OUTPUT: { // This is sent if the HID device driver wants to send raw data to the device
     // Here is where we'll get Rumble and LED events
-    uhid::dualsense_output_report_usb *report = (uhid::dualsense_output_report_usb *)ev.u.output.data;
+    // Check the first byte to see if it's a USB or BT report
+    uint8_t report_type = ev.u.output.data[0];
+    uhid::dualsense_output_report_common report;
+    if (report_type == uhid::DS_OUTPUT_REPORT_USB) {
+      auto report_usb = (uhid::dualsense_output_report_usb *)ev.u.output.data;
+      report = report_usb->common;
+    } else {
+      auto report_bt = (uhid::dualsense_output_report_bt *)ev.u.output.data;
+      report = report_bt->common;
+    }
+
     /*
      * RUMBLE
      * The PS5 joypad seems to report values in the range 0-255,
      * we'll turn those into 0-0xFFFF
      */
-    if (report->valid_flag0 & uhid::MOTOR_OR_COMPATIBLE_VIBRATION || report->valid_flag2 & uhid::COMPATIBLE_VIBRATION) {
-      auto left = (report->motor_left / 255.0f) * 0xFFFF;
-      auto right = (report->motor_right / 255.0f) * 0xFFFF;
+    if (report.valid_flag0 & uhid::MOTOR_OR_COMPATIBLE_VIBRATION || report.valid_flag2 & uhid::COMPATIBLE_VIBRATION) {
+      auto left = (report.motor_left / 255.0f) * 0xFFFF;
+      auto right = (report.motor_right / 255.0f) * 0xFFFF;
       if (state->on_rumble) {
         (*state->on_rumble)(left, right);
       }
-    } else if (report->valid_flag0 == 0 && report->valid_flag1 == 0 && report->valid_flag2 == 0) {
+    } else if (report.valid_flag0 == 0 && report.valid_flag1 == 0 && report.valid_flag2 == 0) {
       // Seems to be a special stop rumble event, let's propagate it
       if (state->on_rumble) {
         (*state->on_rumble)(0, 0);
@@ -105,10 +160,10 @@ static void on_uhid_event(std::shared_ptr<PS5JoypadState> state, uhid_event ev, 
     /*
      * LED
      */
-    if (report->valid_flag1 & uhid::LIGHTBAR_ENABLE) {
+    if (report.valid_flag1 & uhid::LIGHTBAR_ENABLE) {
       if (state->on_led) {
         // TODO: should we blend brightness?
-        (*state->on_led)(report->lightbar_red, report->lightbar_green, report->lightbar_blue);
+        (*state->on_led)(report.lightbar_red, report.lightbar_green, report.lightbar_blue);
       }
     }
   }
@@ -138,22 +193,33 @@ PS5Joypad::PS5Joypad(uint16_t vendor_id) : _state(std::make_shared<PS5JoypadStat
 
 PS5Joypad::~PS5Joypad() {
   if (this->_state && this->_state->dev) {
+    this->_state->stop_repeat_thread = true;
+    if (this->_send_input_thread.joinable()) {
+      this->_send_input_thread.join();
+    }
     this->_state->dev->stop_thread();
     this->_state->dev.reset(); // Will trigger ~Device and ultimately destroy the device
   }
 }
 
 Result<PS5Joypad> PS5Joypad::create(const DeviceDefinition &device) {
+  bool use_bluetooth = true; // TODO: expose this
+
   auto def = uhid::DeviceDefinition{
       .name = device.name,
       .phys = device.device_phys,
       .uniq = device.device_uniq,
-      .bus = BUS_USB,
+      .bus = BUS_BLUETOOTH,
       .vendor = static_cast<uint32_t>(device.vendor_id),
       .product = static_cast<uint32_t>(device.product_id),
       .version = static_cast<uint32_t>(device.version),
       .country = 0,
-      .report_description = {&uhid::ps5_rdesc[0], &uhid::ps5_rdesc[0] + sizeof(uhid::ps5_rdesc)}};
+      .report_description = {&uhid::ps5_rdesc_bt[0], &uhid::ps5_rdesc_bt[0] + sizeof(uhid::ps5_rdesc_bt)}};
+
+  if (!use_bluetooth) {
+    def.bus = BUS_USB;
+    def.report_description = {&uhid::ps5_rdesc[0], &uhid::ps5_rdesc[0] + sizeof(uhid::ps5_rdesc)};
+  }
 
   auto joypad = PS5Joypad(device.vendor_id);
 
@@ -167,7 +233,18 @@ Result<PS5Joypad> PS5Joypad::create(const DeviceDefinition &device) {
   auto dev =
       uhid::Device::create(def, [state = joypad._state](uhid_event ev, int fd) { on_uhid_event(state, ev, fd); });
   if (dev) {
+    joypad._state->is_bluetooth = use_bluetooth;
     joypad._state->dev = std::make_shared<uhid::Device>(std::move(*dev));
+
+    // Readers will expect frequent events event if the state hasn't changed
+    joypad._send_input_thread = std::thread([state = joypad._state]() {
+      while (!state->stop_repeat_thread) {
+        send_report(*state);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      }
+    });
+    joypad._send_input_thread.detach();
+
     return joypad;
   }
   return Error(dev.getErrorMessage());
@@ -186,10 +263,13 @@ template <typename T> std::string to_hex(T i) {
 
 std::string PS5Joypad::get_mac_address() const {
   std::stringstream stream;
-  stream << std::hex << std::setfill('0') << std::setw(2) //
-         << (unsigned int)_state->mac_address[0] << ":" << (unsigned int)_state->mac_address[1] << ":"
-         << (unsigned int)_state->mac_address[2] << ":" << (unsigned int)_state->mac_address[3] << ":"
-         << (unsigned int)_state->mac_address[4] << ":" << (unsigned int)_state->mac_address[5];
+  stream << std::hex << std::setfill('0')
+         << std::setw(2) << (unsigned int)_state->mac_address[0] << ":"
+         << std::setw(2) << (unsigned int)_state->mac_address[1] << ":"
+         << std::setw(2) << (unsigned int)_state->mac_address[2] << ":"
+         << std::setw(2) << (unsigned int)_state->mac_address[3] << ":"
+         << std::setw(2) << (unsigned int)_state->mac_address[4] << ":"
+         << std::setw(2) << (unsigned int)_state->mac_address[5];
   return stream.str();
 }
 

@@ -17,15 +17,15 @@ struct PS5JoypadState {
    * We also use this information internally to unique match a device with the
    * /dev/input/devXX files; see get_nodes()
    */
-  unsigned char mac_address[6] = {
-      0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF
-  };
+  unsigned char mac_address[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
   uint16_t vendor_id;
 
-  uhid::dualsense_input_report_usb current_state;
+  uhid::dualsense_input_report current_state = {};
   uint8_t last_touch_id = 0;
 
   std::optional<std::function<void(int, int)>> on_rumble = std::nullopt;
   std::optional<std::function<void(int, int, int)>> on_led = std::nullopt;
+  bool stop_repeat_thread = false;
+  bool is_bluetooth = true;
 };
 } // namespace inputtino
