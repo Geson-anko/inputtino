@@ -1,4 +1,5 @@
 #include "catch2/catch_all.hpp"
+#include <crc32.hpp>
 #include <filesystem>
 #include <fstream>
 #include <inputtino/input.hpp>
@@ -127,7 +128,7 @@ std::pair<int, std::string> get_system_battery(const std::filesystem::path &powe
   return {capacity, status};
 }
 
-TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL]") {
+TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL],[PS]") {
   // Create the controller
   auto joypad = std::move(*PS5Joypad::create());
 
@@ -151,61 +152,25 @@ TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL]") {
   }
   REQUIRE(gc);
 
-  { // Test creating a second device
-    REQUIRE(SDL_NumJoysticks() == 1);
-    auto joypad2 = std::move(*PS5Joypad::create());
-    std::this_thread::sleep_for(50ms);
-
-    auto devices2 = joypad2.get_nodes();
-    REQUIRE_THAT(devices2, SizeIs(5)); // 3 eventXX and 2 jsYY
-    REQUIRE_THAT(devices2, Contains(ContainsSubstring("/dev/input/event")));
-    REQUIRE_THAT(devices2, Contains(ContainsSubstring("/dev/input/js")));
-
-    flush_sdl_events();
-    REQUIRE(SDL_NumJoysticks() == 2);
-    SDL_GameController *gc2 = SDL_GameControllerOpen(1);
-    REQUIRE(SDL_GameControllerGetType(gc2) == SDL_CONTROLLER_TYPE_PS5);
-  }
-
   REQUIRE(SDL_GameControllerGetType(gc) == SDL_CONTROLLER_TYPE_PS5);
   { // Rumble
     // Checking for basic capability
     REQUIRE(SDL_GameControllerHasRumble(gc));
 
-    auto rumble_data = std::make_shared<std::pair<int, int>>();
+    auto rumble_data = std::make_shared<std::pair<int, int>>(0, 0);
     joypad.set_on_rumble([rumble_data](int low_freq, int high_freq) {
-      rumble_data->first = low_freq;
-      rumble_data->second = high_freq;
+      if (rumble_data->first == 0)
+        rumble_data->first = low_freq;
+      if (rumble_data->second == 0)
+        rumble_data->second = high_freq;
     });
 
     // When debugging this, bear in mind that SDL will send max duration here
     // https://github.com/libsdl-org/SDL/blob/da8fc70a83cf6b76d5ea75c39928a7961bd163d3/src/joystick/linux/SDL_sysjoystick.c#L1628
     SDL_GameControllerRumble(gc, 0xFF00, 0xF00F, 100);
     std::this_thread::sleep_for(30ms); // wait for the effect to be picked up
-    REQUIRE(rumble_data->first == 0xFFFF);
-    REQUIRE(rumble_data->second == 0xF0F0);
-  }
-
-  { // LED
-    // Unfortunately LINUX_JoystickSetLED is not implemented in sysjoystick
-    // TODO: force hidapi driver
-    //        REQUIRE(SDL_GameControllerHasLED(gc));
-    //        struct LED {
-    //          int r;
-    //          int g;
-    //          int b;
-    //        };
-    //        auto led_data = std::make_shared<LED>();
-    //        joypad.set_on_led([led_data](int r, int g, int b) {
-    //          led_data->r = r;
-    //          led_data->g = g;
-    //          led_data->b = b;
-    //        });
-    //        SDL_GameControllerSetLED(gc, 50, 100, 150);
-    //        std::this_thread::sleep_for(30ms); // wait for the effect to be picked up
-    //        REQUIRE(led_data->r == 50);
-    //        REQUIRE(led_data->g == 100);
-    //        REQUIRE(led_data->b == 150);
+    REQUIRE(rumble_data->first == 0x7f7f);
+    REQUIRE(rumble_data->second == 0x7878);
   }
 
   test_buttons(gc, joypad);
@@ -358,10 +323,31 @@ TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL]") {
     flush_sdl_events();
   }
 
-  { // Test touchpad
-    // TODO: sysjoystick is lacking implementation, force hidapi
-    // REQUIRE(SDL_GameControllerGetNumTouchpads(gc) == 1);
+  { // LED TODO: seems that this only works after some gyro/acceleration data is sent
+    REQUIRE(SDL_GameControllerHasLED(gc));
+    struct LED {
+      int r;
+      int g;
+      int b;
+    };
+    auto led_data = std::make_shared<LED>();
+    joypad.set_on_led([led_data](int r, int g, int b) {
+      led_data->r = r;
+      led_data->g = g;
+      led_data->b = b;
+    });
+    REQUIRE(SDL_GameControllerSetLED(gc, 50, 100, 150) == 0);
+    std::this_thread::sleep_for(20ms); // wait for the effect to be picked up
+    REQUIRE(led_data->r == 50);
+    REQUIRE(led_data->g == 100);
+    REQUIRE(led_data->b == 150);
+  }
 
+  { // Test touchpad
+    REQUIRE(SDL_GameControllerGetNumTouchpads(gc) == 1);
+    REQUIRE(SDL_GameControllerGetNumTouchpadFingers(gc, 0) == 2);
+
+    // TODO: test these values with SDL
     joypad.place_finger(0, 1920, 1080);
     joypad.place_finger(1, 1920, 1080);
     joypad.release_finger(0);
@@ -369,10 +355,8 @@ TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL]") {
   }
 
   { // Test battery
-    // SDL doesn't seem to pick it up..
-    //    auto joy = SDL_GameControllerGetJoystick(gc);
-    //    auto level = SDL_JoystickCurrentPowerLevel(joy);
-    //    REQUIRE(level == SDL_JOYSTICK_POWER_MEDIUM);
+    auto joy = SDL_GameControllerGetJoystick(gc);
+    REQUIRE(SDL_JoystickCurrentPowerLevel(joy) == SDL_JOYSTICK_POWER_FULL);
 
     auto base_path =
         std::filesystem::path(
@@ -416,6 +400,23 @@ TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL]") {
       REQUIRE(capacity == 100);
       REQUIRE(status == "Full");
     }
+  }
+
+  { // Test creating a second device
+    REQUIRE(SDL_NumJoysticks() == 1);
+    auto joypad2 = std::move(*PS5Joypad::create());
+    std::this_thread::sleep_for(50ms);
+
+    auto devices2 = joypad2.get_nodes();
+    REQUIRE_THAT(devices2, SizeIs(5)); // 3 eventXX and 2 jsYY
+    REQUIRE_THAT(devices2, Contains(ContainsSubstring("/dev/input/event")));
+    REQUIRE_THAT(devices2, Contains(ContainsSubstring("/dev/input/js")));
+
+    flush_sdl_events();
+    REQUIRE(SDL_NumJoysticks() == 2);
+    SDL_GameController *gc2 = SDL_GameControllerOpen(1);
+    REQUIRE(SDL_GameControllerGetType(gc2) == SDL_CONTROLLER_TYPE_PS5);
+    SDL_GameControllerClose(gc2);
   }
 
   // Adaptive triggers aren't supported by SDL
@@ -570,4 +571,15 @@ TEST_CASE_METHOD(SDLTestsFixture, "Nintendo Joypad", "[SDL]") {
   }
 
   SDL_GameControllerClose(gc);
+}
+
+TEST_CASE("Bluetooth CRC32", "[PS]") {
+  std::string buffer = "123456789";
+  auto crc = CRC32(reinterpret_cast<const unsigned char *>(buffer.data()), buffer.length());
+  REQUIRE(crc == 0xcbf43926); // https://crccalc.com/?crc=123456789&method=CRC-32/ISO-HDLC&datatype=ascii&outtype=hex
+
+  unsigned char PS_INPUT_CRC32_SEED = 0xA1;
+  auto crc2 = CRC32(&PS_INPUT_CRC32_SEED, 1, 0xFFFFFFFF);
+  crc2 = CRC32(reinterpret_cast<unsigned char *>(buffer.data()), buffer.length(), crc2);
+  REQUIRE(crc2 == 0x9498b398);
 }
