@@ -5,8 +5,8 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 ENV UV_LINK_MODE=copy
 
 RUN mkdir /workspace
-WORKDIR /workspace
-COPY . .
+COPY . /workspace/
+WORKDIR /workspace/bindings/python
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -14,10 +14,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     cmake \
     clang-format \
-    clang-tidy \
+    # clang-tidy \
     cpplint \
     cppcheck \
-    iwyu \
+    # iwyu \
     libevdev-dev \
     make \
     pkg-config \
@@ -25,8 +25,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && uv sync \
     # Install pre-commit hooks
-    && uv run pre-commit install \
+    # && uv run pre-commit install \
     # Shell completion
     && echo 'eval "$(uv generate-shell-completion bash)"' >> ~/.bashrc \
     # Auto activate venv
-    && echo 'source /workspace/.venv/bin/activate' >> ~/.bashrc
+    && echo 'source /workspace/bindings/python/.venv/bin/activate' >> ~/.bashrc
