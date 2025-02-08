@@ -41,8 +41,17 @@ test: ## Run tests
 test-full: ## Run full test
 	uv run pytest -v --cov
 
-format: ## Run pre-commit hooks
-	uv run pre-commit run -a
+CPP_FILES=$(shell find src -regex '.*\.\(cpp\|hpp\|cc\|cxx\)')
+PYTHON_FILES=$(shell find src -regex '.*\.\(py\|pyi\)')
+PYTHON_TEST_FILES=$(shell find tests -regex '.*\.\(py\|pyi\)')
+format: ## Run formatter and linter
+	@uv run docformatter $(PYTHON_FILES) $(PYTHON_TEST_FILES) --in-place --wrap-summaries=79 --wrap-descriptions=72
+	@uv run pyupgrade --py310-plus $(PYTHON_FILES) $(PYTHON_TEST_FILES) 
+	@uv run ruff check --fix .
+	@uv run ruff format .
+	@clang-format --style=Google -i $(CPP_FILES)
+	@cppcheck $(CPP_FILES)
+	@cpplint $(CPP_FILES)
 
 run: format test type ## Run all workflow.
 

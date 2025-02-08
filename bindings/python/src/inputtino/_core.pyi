@@ -1,6 +1,4 @@
-"""
-pybind inputtino module!
-"""
+"""Pybind inputtino module!"""
 
 from __future__ import annotations
 

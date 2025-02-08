@@ -60,12 +60,15 @@ build-backend = "scikit_build_core.build"
 
 [dependency-groups]
 dev = [
+    "docformatter>=1.7.5",
     "pre-commit>=4.1.0",
     "pybind11>=2.13.6",
     "pybind11-stubgen>=2.5.1",
     "pyright>=1.1.393",
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
+    "pyupgrade>=3.19.1",
+    "ruff>=0.9.5",
 ]
 
 [tool.pyright]
