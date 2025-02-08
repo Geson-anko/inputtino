@@ -4,39 +4,44 @@ from collections.abc import Callable
 from enum import IntFlag
 
 from . import _core
-from ._core import PS5BatteryState, PS5MotionType, StickPosition
+from ._core import (
+    ControllerButton as CoreButton,
+    PS5BatteryState,
+    PS5MotionType,
+    StickPosition,
+)
 from .base import DeviceDefinition
 
 
 class ControllerButton(IntFlag):
     """Button flags for controller input."""
 
-    DPAD_UP = 0x0001
-    DPAD_DOWN = 0x0002
-    DPAD_LEFT = 0x0004
-    DPAD_RIGHT = 0x0008
+    DPAD_UP = CoreButton.DPAD_UP.value
+    DPAD_DOWN = CoreButton.DPAD_DOWN.value
+    DPAD_LEFT = CoreButton.DPAD_LEFT.value
+    DPAD_RIGHT = CoreButton.DPAD_RIGHT.value
 
-    START = 0x0010
-    BACK = 0x0020
-    HOME = 0x0400
+    START = CoreButton.START.value
+    BACK = CoreButton.BACK.value
+    HOME = CoreButton.HOME.value
 
-    LEFT_STICK = 0x0040
-    RIGHT_STICK = 0x0080
-    LEFT_BUTTON = 0x0100
-    RIGHT_BUTTON = 0x0200
+    LEFT_STICK = CoreButton.LEFT_STICK.value
+    RIGHT_STICK = CoreButton.RIGHT_STICK.value
+    LEFT_BUTTON = CoreButton.LEFT_BUTTON.value
+    RIGHT_BUTTON = CoreButton.RIGHT_BUTTON.value
 
-    SPECIAL = 0x0400
-    PADDLE1 = 0x010000
-    PADDLE2 = 0x020000
-    PADDLE3 = 0x040000
-    PADDLE4 = 0x080000
-    TOUCHPAD = 0x100000
-    MISC = 0x200000
+    SPECIAL = CoreButton.SPECIAL_FLAG.value
+    PADDLE1 = CoreButton.PADDLE1_FLAG.value
+    PADDLE2 = CoreButton.PADDLE2_FLAG.value
+    PADDLE3 = CoreButton.PADDLE3_FLAG.value
+    PADDLE4 = CoreButton.PADDLE4_FLAG.value
+    TOUCHPAD = CoreButton.TOUCHPAD_FLAG.value
+    MISC = CoreButton.MISC_FLAG.value
 
-    A = 0x1000
-    B = 0x2000
-    X = 0x4000
-    Y = 0x8000
+    A = CoreButton.A.value
+    B = CoreButton.B.value
+    X = CoreButton.X.value
+    Y = CoreButton.Y.value
 
 
 class Joypad:
