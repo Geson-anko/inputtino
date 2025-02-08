@@ -3,16 +3,12 @@ project(${SKBUILD_PROJECT_NAME} LANGUAGES CXX)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-include(FetchContent)
 set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 CONFIG REQUIRED)
 
-FetchContent_Declare(
-    inputtino
-    GIT_REPOSITORY https://github.com/games-on-whales/inputtino.git
-    GIT_TAG stable
-)
-FetchContent_MakeAvailable(inputtino)
+# add inputtino
+get_filename_component(PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
+add_subdirectory(${PROJECT_ROOT} "${CMAKE_CURRENT_BINARY_DIR}/inputtino")
 
 execute_process(
     COMMAND pybind11-config --includes

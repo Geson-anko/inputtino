@@ -59,4 +59,4 @@ run: format lint test type ## Run all workflow.
 
 includes: ## Shows the include directories.
 	@pybind11-config --includes | tr ' ' '\n' | grep -e '^-I' | sed 's/^-I//'
-	@echo ./build/**/_deps/inputtino-src/include
+	@echo $(PWD)/../../include
