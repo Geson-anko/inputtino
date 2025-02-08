@@ -142,7 +142,6 @@ docker run -it --rm \
 
 ## Development
 
-
 ### Prerequisites
 
 - Python 3.10 or higher
@@ -156,7 +155,7 @@ docker run -it --rm \
 
 ```bash
 git clone https://github.com/your-username/inputtino.git
-cd bindings/python
+cd inputtino/bindings/python
 ```
 
 2. Set up development environment:
@@ -175,12 +174,6 @@ make docker-attach
 ```
 
 ## Development Workflow
-
-### Code Quality Tools
-
-- Ruff: Code formatting and linting
-- Pyright: Static type checking
-- Pytest with pytest-mock: Testing
 
 ### Common Commands
 
