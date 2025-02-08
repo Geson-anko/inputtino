@@ -53,7 +53,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           enable-cache: true
 
-      - name: Run formatter & linter
+      - name: Run formatter
         run: make format
 
   run_tests:
