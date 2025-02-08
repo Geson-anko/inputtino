@@ -24,8 +24,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/* \
     && uv sync \
-    # Install pre-commit hooks
-    # && uv run pre-commit install \
     # Shell completion
     && echo 'eval "$(uv generate-shell-completion bash)"' >> ~/.bashrc \
     # Auto activate venv
