@@ -31,7 +31,7 @@ RUN apt-get update -y && \
     libevdev-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY . /inputtino/
+COPY src CMakeLists.txt include/ cmake/ docker /inputtino/
 WORKDIR /inputtino
 
 ENV CCACHE_DIR=/cache/ccache

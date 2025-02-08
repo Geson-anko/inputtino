@@ -1,0 +1,27 @@
+services:
+  dev:
+    build:
+      context: ../../
+      dockerfile: bindings/python/Dockerfile
+    volumes:
+      - /dev/input:/dev/input:rw
+      - /dev/uhid:/dev/uhid:rw
+      - inputtino-python:/workspace
+      - uv_cache:/root/.cache/uv
+      - pip_cache:/root/.cache/pip
+      - pre-commit_cache:/root/.cache/pre-commit
+    devices:
+      - /dev/uinput
+    tty: true
+    stdin_open: true
+    command: /bin/bash
+    working_dir: /workspace/bindings/python
+    privileged: true
+    stop_grace_period: 0s
+
+volumes:
+  inputtino-python:
+    name: inputtino-python
+  uv_cache:
+  pip_cache:
+  pre-commit_cache:
