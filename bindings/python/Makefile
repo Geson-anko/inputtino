@@ -50,10 +50,10 @@ lint: ## Run linter
 	cpplint $(CPP_FILES)
 
 format: ## Run formatter
-	@uv run docformatter $(PYTHON_FILES) $(PYTHON_TEST_FILES) --in-place --wrap-summaries=79 --wrap-descriptions=72
-	@uv run pyupgrade --py310-plus $(PYTHON_FILES) $(PYTHON_TEST_FILES) 
-	@uv run ruff format .
-	@clang-format --style=Google -i $(CPP_FILES)
+	uv run docformatter $(PYTHON_FILES) $(PYTHON_TEST_FILES) --in-place --wrap-summaries=79 --wrap-descriptions=72
+	uv run pyupgrade --py310-plus $(PYTHON_FILES) $(PYTHON_TEST_FILES) 
+	uv run ruff format .
+	clang-format --style=Google -i $(CPP_FILES)
 
 run: format lint test type ## Run all workflow.
 
