@@ -1,8 +1,5 @@
-[![Lint & Format / Test / Type Check](https://github.com/Geson-anko/inputtino-python/actions/workflows/main.yml/badge.svg)](https://github.com/Geson-anko/inputtino-python/actions/workflows/main.yml)
-[![Installation Test](https://github.com/Geson-anko/inputtino-python/actions/workflows/test-install.yaml/badge.svg)](https://github.com/Geson-anko/inputtino-python/actions/workflows/test-install.yaml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![docformatter](https://img.shields.io/badge/%20formatter-docformatter-fedcba.svg)](https://github.com/PyCQA/docformatter)
 [![Document Style](https://img.shields.io/badge/%20docstyle-google-3666d6.svg)](https://google.github.io/styleguide/pyguide.html#s3.8-comments-and-docstrings)
 
 # inputtino-python
@@ -48,7 +45,7 @@ sudo dnf install git cmake gcc gcc-c++ make pkgconf-pkg-config libevdev-devel
 2. Install inputtino-python:
 
 ```bash
-pip install git+https://github.com/Geson-anko/inputtino-python.git#stable
+pip install "git+https://github.com/games-on-whales/inputtino.git#subdirectory=bindings/python&branch=stable"
 ```
 
 This package requires root privileges or appropriate permissions for /dev/uinput to work properly.
