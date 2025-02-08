@@ -4,7 +4,7 @@
 
 # inputtino-python
 
-Python bindings for the [inputtino](https://github.com/games-on-whales/inputtino) library, providing virtual input device control for Linux.
+Python bindings for the [inputtino](../../README.md) library, providing virtual input device control for Linux.
 
 ## Features
 
