@@ -45,9 +45,9 @@ CPP_FILES=$(shell find src -regex '.*\.\(cpp\|hpp\|cc\|cxx\)')
 PYTHON_FILES=$(shell find src -regex '.*\.\(py\|pyi\)')
 PYTHON_TEST_FILES=$(shell find tests -regex '.*\.\(py\|pyi\)')
 lint: ## Run linter
-	@uv run ruff check .
-	@cppcheck $(CPP_FILES)
-	@cpplint $(CPP_FILES)
+	uv run ruff check . --fix
+	cppcheck $(CPP_FILES)
+	cpplint $(CPP_FILES)
 
 format: ## Run formatter
 	@uv run docformatter $(PYTHON_FILES) $(PYTHON_TEST_FILES) --in-place --wrap-summaries=79 --wrap-descriptions=72

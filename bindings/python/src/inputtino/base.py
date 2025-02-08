@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+
+
 from . import _core
 
 
@@ -12,7 +14,8 @@ class DeviceDefinition:
     Args:
         name: Device name
         vendor_id: Vendor ID for the device
-        product_id: Product ID for the device
+        product_id: Product ID for the 
+        device
         version: Device version
         device_phys: Optional physical device path
         device_uniq: Optional unique device identifier
