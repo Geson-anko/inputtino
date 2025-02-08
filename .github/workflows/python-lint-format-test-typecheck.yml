@@ -24,7 +24,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format cpplint cppcheck
+          sudo apt-get install -y clang-format cpplint cppcheck make
 
       - name: Set up Python
         uses: astral-sh/setup-uv@v4
@@ -33,14 +33,8 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           enable-cache: true
 
-      - name: Cache pre-commit
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
-
-      - name: Run pre-commit
-        uses: pre-commit/action@v3.0.1
+      - name: Run formatter & linter
+        run: make format
 
   run_tests:
     runs-on: ${{ matrix.os }}
@@ -78,7 +72,7 @@ jobs:
 
       - name: Run pytest with coverage
         run: |
-          uv run pytest -vv --log-level INFO --cov -m "not practical"
+          uv run pytest -v --log-level INFO --cov -m "not practical"
 
   run_type-check:
     runs-on: ubuntu-24.04
