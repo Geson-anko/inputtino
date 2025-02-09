@@ -5,6 +5,8 @@ from __future__ import annotations
 import time
 from enum import IntEnum
 
+from typing_extensions import Self
+
 from . import _core
 from .base import DeviceDefinition
 
@@ -246,168 +248,17 @@ class KeyCode(IntEnum):
     CLOSE_BRACKET = 0xDD  # ]}
     QUOTE = 0xDE  # '"
 
-    @staticmethod
-    def from_str(string: str) -> KeyCode:
-        return get_keycode_from_string(string)
+    @classmethod
+    def from_str(cls, string: str) -> Self:
+        """Retrieves key code from string.
 
+        Args:
+            string: Key name.
 
-def get_keycode_from_string(key: str) -> KeyCode:
-    """Convert a string representation to a KeyCode enum value.
+        Returns:
+            KeyCode member.
 
-    Args:
-        key: A string representing the key name.
-
-    Returns:
-        The corresponding KeyCode enum value.
-
-    Raises:
-        ValueError: If no matching KeyCode is found for the given key.
-    """
-    # Create a mapping of normalized key names to KeyCode values
-    key_mapping = {
-        # Standard Keys
-        "backspace": KeyCode.BACKSPACE,
-        "tab": KeyCode.TAB,
-        "clear": KeyCode.CLEAR,
-        "enter": KeyCode.ENTER,
-        "shift": KeyCode.SHIFT,
-        "ctrl": KeyCode.CTRL,
-        "alt": KeyCode.ALT,
-        "pause": KeyCode.PAUSE,
-        "capslock": KeyCode.CAPS_LOCK,
-        "esc": KeyCode.ESC,
-        "space": KeyCode.SPACE,
-        "pageup": KeyCode.PAGE_UP,
-        "pagedown": KeyCode.PAGE_DOWN,
-        "end": KeyCode.END,
-        "home": KeyCode.HOME,
-        "left": KeyCode.LEFT,
-        "up": KeyCode.UP,
-        "right": KeyCode.RIGHT,
-        "down": KeyCode.DOWN,
-        "printscreen": KeyCode.PRINTSCREEN,
-        "insert": KeyCode.INSERT,
-        "delete": KeyCode.DELETE,
-        # Numbers
-        "0": KeyCode.KEY_0,
-        "1": KeyCode.KEY_1,
-        "2": KeyCode.KEY_2,
-        "3": KeyCode.KEY_3,
-        "4": KeyCode.KEY_4,
-        "5": KeyCode.KEY_5,
-        "6": KeyCode.KEY_6,
-        "7": KeyCode.KEY_7,
-        "8": KeyCode.KEY_8,
-        "9": KeyCode.KEY_9,
-        # Letters
-        "a": KeyCode.A,
-        "b": KeyCode.B,
-        "c": KeyCode.C,
-        "d": KeyCode.D,
-        "e": KeyCode.E,
-        "f": KeyCode.F,
-        "g": KeyCode.G,
-        "h": KeyCode.H,
-        "i": KeyCode.I,
-        "j": KeyCode.J,
-        "k": KeyCode.K,
-        "l": KeyCode.L,
-        "m": KeyCode.M,
-        "n": KeyCode.N,
-        "o": KeyCode.O,
-        "p": KeyCode.P,
-        "q": KeyCode.Q,
-        "r": KeyCode.R,
-        "s": KeyCode.S,
-        "t": KeyCode.T,
-        "u": KeyCode.U,
-        "v": KeyCode.V,
-        "w": KeyCode.W,
-        "x": KeyCode.X,
-        "y": KeyCode.Y,
-        "z": KeyCode.Z,
-        # Windows Keys
-        "leftwin": KeyCode.LEFT_WIN,
-        "rightwin": KeyCode.RIGHT_WIN,
-        "app": KeyCode.APP,
-        # Numpad
-        "numpad0": KeyCode.NUMPAD_0,
-        "numpad1": KeyCode.NUMPAD_1,
-        "numpad2": KeyCode.NUMPAD_2,
-        "numpad3": KeyCode.NUMPAD_3,
-        "numpad4": KeyCode.NUMPAD_4,
-        "numpad5": KeyCode.NUMPAD_5,
-        "numpad6": KeyCode.NUMPAD_6,
-        "numpad7": KeyCode.NUMPAD_7,
-        "numpad8": KeyCode.NUMPAD_8,
-        "numpad9": KeyCode.NUMPAD_9,
-        "multiply": KeyCode.MULTIPLY,
-        "add": KeyCode.ADD,
-        "subtract": KeyCode.SUBTRACT,
-        "decimal": KeyCode.DECIMAL,
-        "divide": KeyCode.DIVIDE,
-        # Function Keys
-        "f1": KeyCode.F1,
-        "f2": KeyCode.F2,
-        "f3": KeyCode.F3,
-        "f4": KeyCode.F4,
-        "f5": KeyCode.F5,
-        "f6": KeyCode.F6,
-        "f7": KeyCode.F7,
-        "f8": KeyCode.F8,
-        "f9": KeyCode.F9,
-        "f10": KeyCode.F10,
-        "f11": KeyCode.F11,
-        "f12": KeyCode.F12,
-        "f13": KeyCode.F13,
-        "f14": KeyCode.F14,
-        "f15": KeyCode.F15,
-        "f16": KeyCode.F16,
-        "f17": KeyCode.F17,
-        "f18": KeyCode.F18,
-        "f19": KeyCode.F19,
-        "f20": KeyCode.F20,
-        "f21": KeyCode.F21,
-        "f22": KeyCode.F22,
-        "f23": KeyCode.F23,
-        "f24": KeyCode.F24,
-        # Lock Keys
-        "numlock": KeyCode.NUM_LOCK,
-        "scrolllock": KeyCode.SCROLL_LOCK,
-        # Left/Right Keys
-        "leftshift": KeyCode.LEFT_SHIFT,
-        "rightshift": KeyCode.RIGHT_SHIFT,
-        "leftcontrol": KeyCode.LEFT_CONTROL,
-        "rightcontrol": KeyCode.RIGHT_CONTROL,
-        "leftalt": KeyCode.LEFT_ALT,
-        "rightalt": KeyCode.RIGHT_ALT,
-        # Media Keys
-        "volumemute": KeyCode.VOLUME_MUTE,
-        "volumedown": KeyCode.VOLUME_DOWN,
-        "volumeup": KeyCode.VOLUME_UP,
-        "medianext": KeyCode.MEDIA_NEXT,
-        "mediaprev": KeyCode.MEDIA_PREV,
-        "mediastop": KeyCode.MEDIA_STOP,
-        "mediaplaypause": KeyCode.MEDIA_PLAY_PAUSE,
-        # OEM Keys
-        "semicolon": KeyCode.SEMICOLON,
-        "plus": KeyCode.PLUS,
-        "comma": KeyCode.COMMA,
-        "minus": KeyCode.MINUS,
-        "period": KeyCode.PERIOD,
-        "slash": KeyCode.SLASH,
-        "tilde": KeyCode.TILDE,
-        "openbracket": KeyCode.OPEN_BRACKET,
-        "backslash": KeyCode.BACKSLASH,
-        "closebracket": KeyCode.CLOSE_BRACKET,
-        "quote": KeyCode.QUOTE,
-    }
-
-    # Normalize the input key (convert to lowercase and remove spaces)
-    normalized_key = key.lower().replace(" ", "")
-
-    # Try to find the KeyCode
-    if normalized_key in key_mapping:
-        return key_mapping[normalized_key]
-
-    raise ValueError(f"No KeyCode found for key: {key}")
+        Raises:
+            KeyError: If provided name is not in KeyCode enum members.
+        """
+        return cls[string.upper()]

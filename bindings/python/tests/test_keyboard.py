@@ -123,6 +123,14 @@ def test_keyboard_creation_failure():
             Keyboard()
 
 
+def test_key_code_from_string():
+    assert KeyCode.from_str("a") is KeyCode.A
+    assert KeyCode.from_str("SHIFT") is KeyCode.SHIFT
+
+    with pytest.raises(KeyError):
+        KeyCode.from_str("")
+
+
 @mark_practical
 def test_practical_keyboard_input():
     """Test simulating keyboard input with a practical example.
