@@ -45,8 +45,8 @@ classifiers = [
 ]
 
 [project.urls]
-Repository = "https://github.com/Geson-anko/inputtino-python"
-Issues = "https://github.com/Geson-anko/inputtino-python/issues"
+Repository = "https://github.com/games-on-whales/inputtino"
+Issues = "https://github.com/games-on-whales/inputtino/issues"
 
 [tool.uv]
 python-preference = "only-managed"

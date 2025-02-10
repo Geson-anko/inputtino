@@ -145,49 +145,30 @@ docker run -it --rm \
 ### Prerequisites
 
 - Python 3.10 or higher
-- Docker (recommended)
-- Make
 - Git
 
 ### Setting Up
 
-1. Fork and clone the repository:
-
+1. If using `uv` (recommended):
 ```bash
 git clone https://github.com/your-username/inputtino.git
 cd inputtino/bindings/python
+uv sync
 ```
 
-2. Set up development environment:
-
-Using Docker (recommended):
-
+2. If using `pip`:
 ```bash
-# Build development container
-make docker-build
-
-# Start container
-make docker-up
-
-# Attach to development shell
-make docker-attach
+git clone https://github.com/your-username/inputtino.git
+cd inputtino/bindings/python
+python -m venv ./venv
+source ./venv/bin/activate
+pip install .
 ```
 
-## Development Workflow
-
-### Common Commands
+### Running Tests
 
 ```bash
-# Run all checks
-make run
-
-# Individual checks
-make lint         # Run linters
-make format       # Run formatters
-make test         # Run unit tests
-make test-full    # Run all tests including practical tests
-make type         # Run type checker
-make clean        # Clean generated files
+uv run pytest -v --log-level INFO --cov -m "not practical"
 ```
 
 ## Coding Standards
