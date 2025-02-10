@@ -142,6 +142,10 @@ docker run -it --rm \
 
 ## Development
 
+Simply open this directory in your favorite IDE and use [devcontainers](https://code.visualstudio.com/docs/devcontainers/containers)!
+
+Or for a more manual approach, follow these steps:
+
 ### Prerequisites
 
 - Python 3.10 or higher

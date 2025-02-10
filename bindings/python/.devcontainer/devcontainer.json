@@ -1,0 +1,11 @@
+{
+  "name": "inputtino-python-dev",
+  "build": {
+    "context": "../../../", // The root of the repository
+    "dockerfile": "../Dockerfile"
+  },
+  "privileged": true,
+  // Mount the root of the repository so that the C++ code can be built
+  "workspaceMount": "source=${localWorkspaceFolder}/../../,target=/workspace,type=bind",
+  "workspaceFolder": "/workspace/bindings/python"
+}
