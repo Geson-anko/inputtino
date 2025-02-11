@@ -1,15 +1,13 @@
-# Start by removing everything and add just the things we need
-*
-!src
-!CMakeLists.txt
-!include
-!cmake/
-
 # Python bindings
-!bindings/python/
+
 bindings/python/.vscode
 bindings/python/build
 bindings/python/dist/
 bindings/python/sdist/
 bindings/python/wheels/
-**/*venv
+**/.venv
+**/.pytest_cache
+**/.ruff_cache
+**/__pycache__/
+**/.ipynb_checkpoints
+.coverage
