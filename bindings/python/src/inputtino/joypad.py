@@ -10,7 +10,7 @@ from ._core import (
     PS5MotionType,
     StickPosition,
 )
-from .base import DeviceDefinition
+from .base import DeviceDefinition, VirtualDevice
 
 
 class ControllerButton(IntFlag):
@@ -44,7 +44,7 @@ class ControllerButton(IntFlag):
     Y = CoreButton.Y.value
 
 
-class Joypad:
+class Joypad(VirtualDevice):
     """Base class for all joypad implementations."""
 
     def __init__(self, device_def: DeviceDefinition, joypad: _core.Joypad) -> None:
@@ -54,17 +54,9 @@ class Joypad:
             device_def: Device definition for the joypad
             joypad: Core joypad instance
         """
+        super().__init__(joypad)
         self._device_def = device_def
         self._joypad = joypad
-
-    @property
-    def nodes(self) -> list[str]:
-        """Get device nodes created by this virtual joypad.
-
-        Returns:
-            List of device node paths
-        """
-        return self._joypad.get_nodes()
 
     def set_pressed_buttons(self, buttons: ControllerButton) -> None:
         """Set currently pressed buttons.

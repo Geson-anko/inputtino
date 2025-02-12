@@ -40,3 +40,24 @@ class DeviceDefinition:
         definition.device_phys = self.device_phys
         definition.device_uniq = self.device_uniq
         return definition
+
+
+class VirtualDevice:
+    """Base class for all virtual input devices."""
+
+    def __init__(self, device: _core.VirtualDevice) -> None:
+        """Initialize virtual device.
+
+        Args:
+            device: Core virtual device instance
+        """
+        self._device = device
+
+    @property
+    def nodes(self) -> list[str]:
+        """Get the device nodes created by this virtual device.
+
+        Returns:
+            List of device node paths representing the virtual device in /dev/input/
+        """
+        return self._device.get_nodes()

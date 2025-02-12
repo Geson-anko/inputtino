@@ -1,6 +1,6 @@
 from importlib import metadata
 
-from .base import DeviceDefinition
+from .base import DeviceDefinition, VirtualDevice
 from .joypad import (
     ControllerButton,
     Joypad,
@@ -39,4 +39,5 @@ __all__ = [
     "PenButtonType",
     "PenTablet",
     "PenToolType",
+    "VirtualDevice",
 ]

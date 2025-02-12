@@ -4,7 +4,7 @@ import time
 
 from . import _core
 from ._core import MouseButton
-from .base import DeviceDefinition
+from .base import DeviceDefinition, VirtualDevice
 
 # Default device definition for mouse
 DEFAULT_MOUSE = DeviceDefinition(
@@ -15,7 +15,7 @@ DEFAULT_MOUSE = DeviceDefinition(
 )
 
 
-class Mouse:
+class Mouse(VirtualDevice):
     """Virtual mouse input device.
 
     This class provides functionality to simulate mouse movements,
@@ -33,6 +33,7 @@ class Mouse:
             RuntimeError: If device creation fails
         """
         self._mouse = _core.Mouse.create(device_def.to_core())
+        super().__init__(self._mouse)
 
     def move(self, delta_x: int, delta_y: int) -> None:
         """Move the mouse cursor relative to its current position.
@@ -87,15 +88,6 @@ class Mouse:
                      Positive values scroll right, negative values scroll left.
         """
         self._mouse.horizontal_scroll(distance)
-
-    @property
-    def nodes(self) -> list[str]:
-        """Get the device nodes created by this virtual mouse.
-
-        Returns:
-            List of device node paths
-        """
-        return self._mouse.get_nodes()
 
     def click(
         self, button: MouseButton = MouseButton.LEFT, duration: float = 0.0
