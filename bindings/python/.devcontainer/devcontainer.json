@@ -6,7 +6,7 @@
   },
   "privileged": true,
   // Mount the root of the repository so that the C++ code can be built
-  "workspaceMount": "source=inputtino-python-dev,target=/workspace,type=volume",
+  "workspaceMount": "source=${localWorkspaceFolder}/../../,target=/workspace,type=bind",
   "workspaceFolder": "/workspace/bindings/python",
   "mounts": [
     "source=uv-cache,target=/root/.cache/uv,type=volume",
