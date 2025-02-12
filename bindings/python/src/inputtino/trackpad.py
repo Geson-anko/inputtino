@@ -1,7 +1,7 @@
 """Trackpad input device implementation."""
 
 from . import _core
-from .base import DeviceDefinition
+from .base import DeviceDefinition, VirtualDevice
 
 DEFAULT_TRACKPAD = DeviceDefinition(
     name="Wolf (virtual) touchpad",
@@ -11,7 +11,7 @@ DEFAULT_TRACKPAD = DeviceDefinition(
 )
 
 
-class Trackpad:
+class Trackpad(VirtualDevice):
     """Virtual trackpad input device.
 
     This class provides functionality to simulate multi-touch trackpad
@@ -33,6 +33,7 @@ class Trackpad:
             RuntimeError: If device creation fails
         """
         self._trackpad = _core.Trackpad.create(device_def.to_core())
+        super().__init__(self._trackpad)
 
     def place_finger(
         self,
@@ -71,12 +72,3 @@ class Trackpad:
             pressed: True to press the button, False to release
         """
         self._trackpad.set_left_btn(pressed)
-
-    @property
-    def nodes(self) -> list[str]:
-        """Get the device nodes created by this virtual trackpad.
-
-        Returns:
-            List of device node paths
-        """
-        return self._trackpad.get_nodes()

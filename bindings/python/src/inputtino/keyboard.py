@@ -8,7 +8,7 @@ from enum import IntEnum
 from typing_extensions import Self
 
 from . import _core
-from .base import DeviceDefinition
+from .base import DeviceDefinition, VirtualDevice
 
 # Default device definition for keyboard
 DEFAULT_KEYBOARD = DeviceDefinition(
@@ -19,7 +19,7 @@ DEFAULT_KEYBOARD = DeviceDefinition(
 )
 
 
-class Keyboard:
+class Keyboard(VirtualDevice):
     """Virtual keyboard input device.
 
     This class provides functionality to simulate keyboard input.
@@ -51,6 +51,7 @@ class Keyboard:
             RuntimeError: If device creation fails
         """
         self._keyboard = _core.Keyboard.create(device_def.to_core(), millis_repress_key)
+        super().__init__(self._keyboard)
 
     def press(self, key_code: int) -> None:
         """Press a keyboard key.
@@ -67,15 +68,6 @@ class Keyboard:
             key_code: Win32 Virtual Key code of the key to release
         """
         self._keyboard.release(key_code)
-
-    @property
-    def nodes(self) -> list[str]:
-        """Get the device nodes created by this virtual keyboard.
-
-        Returns:
-            List of device node paths
-        """
-        return self._keyboard.get_nodes()
 
     def type(self, key_code: int, duration: float = 0.1) -> None:
         """Press and release a key with specified duration.

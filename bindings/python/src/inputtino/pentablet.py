@@ -2,7 +2,7 @@
 
 from . import _core
 from ._core import PenButtonType, PenToolType
-from .base import DeviceDefinition
+from .base import DeviceDefinition, VirtualDevice
 
 # Default device definition for pen tablet
 DEFAULT_PEN_TABLET = DeviceDefinition(
@@ -13,7 +13,7 @@ DEFAULT_PEN_TABLET = DeviceDefinition(
 )
 
 
-class PenTablet:
+class PenTablet(VirtualDevice):
     """Virtual pen tablet input device.
 
     This class provides functionality to simulate pen tablet input with
@@ -35,6 +35,7 @@ class PenTablet:
             RuntimeError: If device creation fails
         """
         self._tablet = _core.PenTablet.create(device_def.to_core())
+        super().__init__(self._tablet)
 
     def place_tool(
         self,
@@ -70,12 +71,3 @@ class PenTablet:
             pressed: True if button is pressed, False if released
         """
         self._tablet.set_btn(button, pressed)
-
-    @property
-    def nodes(self) -> list[str]:
-        """Get the device nodes created by this virtual pen tablet.
-
-        Returns:
-            List of device node paths
-        """
-        return self._tablet.get_nodes()

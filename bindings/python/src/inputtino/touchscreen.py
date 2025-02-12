@@ -1,7 +1,7 @@
 """Touchscreen input device implementation."""
 
 from . import _core
-from .base import DeviceDefinition
+from .base import DeviceDefinition, VirtualDevice
 
 # Default device definition for touchscreen
 DEFAULT_TOUCHSCREEN = DeviceDefinition(
@@ -12,7 +12,7 @@ DEFAULT_TOUCHSCREEN = DeviceDefinition(
 )
 
 
-class TouchScreen:
+class TouchScreen(VirtualDevice):
     """Virtual touchscreen input device.
 
     This class provides functionality to simulate touchscreen
@@ -31,6 +31,7 @@ class TouchScreen:
             RuntimeError: If device creation fails
         """
         self._touchscreen = _core.TouchScreen.create(device_def.to_core())
+        super().__init__(self._touchscreen)
 
     def place_finger(
         self,
@@ -58,12 +59,3 @@ class TouchScreen:
             finger_nr: Finger number to release
         """
         self._touchscreen.release_finger(finger_nr)
-
-    @property
-    def nodes(self) -> list[str]:
-        """Get the device nodes created by this virtual touchscreen.
-
-        Returns:
-            List of device node paths
-        """
-        return self._touchscreen.get_nodes()

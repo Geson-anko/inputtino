@@ -45,8 +45,6 @@ class DeviceDefinition:
 class VirtualDevice:
     """Base class for all virtual input devices."""
 
-    _device: _core.VirtualDevice
-
     def __init__(self, device: _core.VirtualDevice) -> None:
         """Initialize virtual device.
 
