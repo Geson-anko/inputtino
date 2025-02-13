@@ -17,7 +17,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cppcheck \
     # iwyu \
     libevdev-dev \
+    libsdl2-dev \
     make \
     pkg-config \
     git \
+    xvfb \
+    x11-utils \
     && rm -rf /var/lib/apt/lists/*
+
+ENTRYPOINT ["/workspace/bindings/python/.devcontainer/docker-entrypoint.sh"]
+CMD ["bash"]
