@@ -1,22 +1,23 @@
-find_package(SWIG 4.0 REQUIRED COMPONENTS python)
-include (UseSWIG)
+cmake_minimum_required(VERSION 3.15)
+project(${SKBUILD_PROJECT_NAME} LANGUAGES CXX)
 
-set_property(SOURCE inputtino.i PROPERTY CPLUSPLUS ON)
-set_property(SOURCE inputtino.i PROPERTY SWIG_MODULE_NAME py_inputtino)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-swig_add_library(py_inputtino
-        TYPE MODULE
-        LANGUAGE python
-        OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/out/py_inputtino
-        SOURCES inputtino.i)
-add_library(inputtino::py_inputtino ALIAS py_inputtino)
+set(PYBIND11_FINDPYTHON ON)
+find_package(pybind11 CONFIG REQUIRED)
 
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+# add inputtino
+get_filename_component(PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
+add_subdirectory(${PROJECT_ROOT} "${CMAKE_CURRENT_BINARY_DIR}/inputtino")
 
-target_include_directories(py_inputtino
-        PRIVATE
-        ${Python3_INCLUDE_DIRS}
+execute_process(
+    COMMAND pybind11-config --includes
+    OUTPUT_VARIABLE PYBIND11_INCLUDES
+    OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-set_property(TARGET py_inputtino PROPERTY SWIG_USE_TARGET_INCLUDE_DIRECTORIES ON)
 
-target_link_libraries(py_inputtino PRIVATE inputtino::libinputtino)
+pybind11_add_module(_core MODULE src/main.cpp)
+target_include_directories(_core PRIVATE ${PYBIND11_INCLUDES})
+target_link_libraries(_core PUBLIC inputtino::libinputtino)
+
+install(TARGETS _core DESTINATION inputtino)

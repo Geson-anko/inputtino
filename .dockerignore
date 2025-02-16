@@ -4,4 +4,3 @@
 !CMakeLists.txt
 !include
 !cmake/
-!docker/startup.sh

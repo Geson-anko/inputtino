@@ -72,9 +72,7 @@ generate_export_header(libinputtino EXPORT_FILE_NAME include/inputtino/${export_
 # Options
 #----------------------------------------------------------------------------------------------------------------------
 
-option(BUILD_SERVER "Build REST server" OFF)
 option(BUILD_C_BINDINGS "Build C bindings" OFF)
-option(BUILD_PYTHON_BINDINGS "Build Python bindings using Swig" OFF)
 option(LIBINPUTTINO_INSTALL "Generate the install target" OFF)
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -117,19 +115,11 @@ if (UNIX AND NOT APPLE)
     target_include_directories(libinputtino PUBLIC "src/uinput/include" "src/uhid/include/")
 endif ()
 
-if (BUILD_SERVER)
-    add_subdirectory(src/server)
-endif ()
-
 if (BUILD_C_BINDINGS)
     file(GLOB C_SRC_FILES SRCS src/c-bindings/*.cpp)
     target_sources(libinputtino PRIVATE
             src/c-bindings/helpers.hpp
             ${C_SRC_FILES})
-endif ()
-
-if (BUILD_PYTHON_BINDINGS)
-    add_subdirectory(bindings/python)
 endif ()
 
 # Testing only available if this is the main app
