@@ -1,6 +1,6 @@
 # inputtino
 
-An easy to use virtual input library for Linux built on top of uinput and evdev.  
+An easy to use virtual input library for Linux built on top of `uinput`, `evdev` and `uhid`.  
 Supports:
 
 - Keyboard
@@ -11,15 +11,12 @@ Supports:
 - Joypad
     - Correctly emulates Xbox, PS5 or Nintendo joypads
     - Supports callbacks on Rumble events
-    - Gyro, Acceleration and Touchpad support (using UHID, [see rationale here](src/uhid/README.adoc))
+    - Gyro, Acceleration and Touchpad support (using UHID)
 
-## Use the REST API
-
-**WIP**: A simple JSON REST API to consume this library
-
-```bash
-docker run --init --name inputtino -p 8080:8080 -v /dev/input:/dev/input:rw --device /dev/uinput ghcr.io/games-on-whales/inputtino:stable
-```
+Interested in how the joypad works under the hood? Checkout these blog posts:
+- [When uinput Isn’t Enough: Virtualizing a DualSense controller](https://abeltra.me/blog/inputtino-uhid-1/)
+- [Creating a Virtual DualSense Controller via UHID](https://abeltra.me/blog/inputtino-uhid-2/)
+- [Beyond USB: Improving Virtual Controller Support in Linux Games](https://abeltra.me/blog/inputtino-uhid-3/)
 
 ## Include in a C++ project
 
@@ -56,3 +53,26 @@ devices have been tested with `libinput`.
 
 The main interface is easily accessible
 under [include/inputtino/input.hpp](include/inputtino/input.hpp)
+
+## Using the Python bindings
+
+Checkout the instructions in [bindings/python/](bindings/python/); example usage:
+
+```python
+from inputtino import Mouse, MouseButton
+
+# Initialize mouse device
+mouse = Mouse()
+
+# Move mouse
+mouse.move(100, 50)  # Move right 100, down 50
+mouse.move_abs(500, 300, 1920, 1080)  # Move to absolute position
+
+# Click operations
+mouse.click(MouseButton.LEFT)
+mouse.click(MouseButton.RIGHT, duration=0.5)  # Hold for 0.5 seconds
+
+# Scrolling
+mouse.scroll_vertical(120)  # Scroll up
+mouse.scroll_horizontal(-120)  # Scroll left
+```
