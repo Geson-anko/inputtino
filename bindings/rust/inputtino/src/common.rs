@@ -1,6 +1,7 @@
 use crate::{sys::{InputtinoDeviceDefinition, InputtinoErrorHandler}, InputtinoError};
 use std::{ffi::CString, path::PathBuf};
 
+/// Definition of the type of device to emulate.
 #[allow(dead_code)]
 pub struct DeviceDefinition {
     pub def: InputtinoDeviceDefinition,
@@ -11,6 +12,16 @@ pub struct DeviceDefinition {
 }
 
 impl DeviceDefinition {
+    /// Create a new device definition for creating emulated devices.
+    ///
+    /// # Arguments
+    ///
+    /// * `name` - The name of the emulated device.
+    /// * `vendor_id` - ID of the vendor that created the emulated device.
+    /// * `product_id` - ID of the product.
+    /// * `version` -
+    /// * `phys` -
+    /// * `uniq` -
     pub fn new(
         name: &str,
         vendor_id: u16,
@@ -30,6 +41,7 @@ impl DeviceDefinition {
             device_phys: phys.as_ptr(), // TODO: optional, if not present random MAC address
             device_uniq: uniq.as_ptr(),
         };
+
         DeviceDefinition {
             def,
             name,

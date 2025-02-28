@@ -6,7 +6,7 @@ use serial_test::serial;
 fn test_switch_joypad() {
     let device = DeviceDefinition::new(
         "Rusty Switch controller",
-        // https://github.com/torvalds/linux/blob/master/drivers/hid/hid-ids.h#L981
+        // https://github.com/torvalds/linux/blob/276f98efb64a2c31c099465ace78d3054c662a0f/drivers/hid/hid-ids.h#L990
         0x057e,
         0x2009,
         0x8111,

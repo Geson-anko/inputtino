@@ -13,35 +13,83 @@ use crate::sys::{
     inputtino_joypad_xone_set_triggers,
 };
 
+/// Emulated XBox One joypad.
 pub struct XboxOneJoypad {
     joypad: *mut crate::sys::InputtinoXOneJoypad,
     on_rumble_fn: Box<dyn FnMut(i32, i32)>,
 }
 
 impl XboxOneJoypad {
+    /// Create a new emulated XBox One joypad device with the given device definition.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let definition = inputtino::DeviceDefinition::new(
+    ///     "Inputtino XBox One controller",
+    ///     0x045E,
+    ///     0x02DD,
+    ///     0x0100,
+    ///     "00:11:22:33:44",
+    ///     "00:11:22:33:44",
+    /// );
+    /// let device = inputtino::SwitchJoypad::new(&definition);
+    /// ```
     pub fn new(device: &DeviceDefinition) -> Result<Self, InputtinoError> {
         make_device(inputtino_joypad_xone_create, device)
             .map(|joypad| XboxOneJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
     }
 
+    /// Set the state of all buttons.
+    ///
+    /// Any buttons that are not set are released if they were set before.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// device.set_pressed(inputtino::JoypadButton::A | inputtino::JoypadButton::B);
+    /// ```
     pub fn set_pressed(&self, buttons: i32) {
         unsafe {
             inputtino_joypad_xone_set_pressed_buttons(self.joypad, buttons);
         }
     }
 
+    /// Set the state of the triggers.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// device.set_triggers(0, -i16::MAX);
+    /// ```
     pub fn set_triggers(&self, left_trigger: i16, right_trigger: i16) {
         unsafe {
             inputtino_joypad_xone_set_triggers(self.joypad, left_trigger, right_trigger);
         }
     }
 
+    /// Set the state of the joysticks.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// device.set_stick(inputtino::JoypadStickPosition::LS, 0, -i16::MAX);
+    /// ```
     pub fn set_stick(&self, stick_type: JoypadStickPosition, x: i16, y: i16) {
         unsafe {
             inputtino_joypad_xone_set_stick(self.joypad, stick_type, x, y);
         }
     }
 
+    /// Sets a callback to be called when this device receives a rumble event.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// device.set_on_rumble(|low, high| {
+    ///     println!("Received rumble event with frequencies low: {low}, high: {high}");
+    /// });
+    /// ```
     pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
         self.on_rumble_fn = Box::new(on_rumble_fn);
         unsafe {
