@@ -1,4 +1,4 @@
-use crate::sys::{InputtinoDeviceDefinition, InputtinoErrorHandler};
+use crate::{sys::{InputtinoDeviceDefinition, InputtinoErrorHandler}, InputtinoError};
 use std::{ffi::CString, path::PathBuf};
 
 #[allow(dead_code)]
@@ -56,11 +56,11 @@ type GetNodesFn<T> = unsafe extern "C" fn(
 pub(crate) fn get_nodes<T>(
     f: GetNodesFn<T>,
     device: *mut T,
-) -> Result<Vec<PathBuf>, String> {
+) -> Result<Vec<PathBuf>, InputtinoError> {
     let mut nodes_count: core::ffi::c_int = 0;
     let nodes = unsafe { f(device, &mut nodes_count) };
     if nodes.is_null() {
-        return Err("Failed to get nodes".to_string());
+        return Err(InputtinoError::Generic("Failed to get nodes".to_string()));
     }
 
     let mut result = Vec::new();
@@ -80,7 +80,7 @@ type CreateDeviceFn<T> = unsafe extern "C" fn(
 pub(crate) fn make_device<T>(
     f: CreateDeviceFn<T>,
     definition: &DeviceDefinition,
-) -> Result<*mut T, String> {
+) -> Result<*mut T, InputtinoError> {
     let mut error_str = std::ffi::CString::default();
     let error_handler = InputtinoErrorHandler {
         eh: Some(error_handler_fn),
@@ -89,7 +89,7 @@ pub(crate) fn make_device<T>(
     let device = unsafe { f(&definition.def, &error_handler) };
     if device.is_null() {
         let error_msg = error_str.to_string_lossy();
-        Err(format!("Failed to create input device: {error_msg}"))
+        Err(InputtinoError::Generic(format!("Failed to create input device: {error_msg}")))
     } else {
         Ok(device)
     }

@@ -13,19 +13,19 @@ use crate::sys::{
     inputtino_mouse_scroll_vertical,
 };
 
-use crate::MouseButton;
+use crate::{InputtinoError, MouseButton};
 
 pub struct Mouse {
     mouse: *mut crate::sys::InputtinoMouse,
 }
 
 impl Mouse {
-    pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
+    pub fn new(device: &DeviceDefinition) -> Result<Self, InputtinoError> {
         make_device(inputtino_mouse_create, device)
             .map(|mouse| Mouse { mouse })
     }
 
-    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
+    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, InputtinoError> {
         get_nodes(inputtino_mouse_get_nodes, self.mouse)
     }
 

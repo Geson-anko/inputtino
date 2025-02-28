@@ -1,6 +1,9 @@
 mod common;
 pub use common::DeviceDefinition;
 
+mod error;
+pub use error::InputtinoError;
+
 mod mouse;
 pub use mouse::Mouse;
 

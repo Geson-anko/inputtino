@@ -11,7 +11,7 @@ use crate::sys::{
     inputtino_joypad_switch_set_triggers,
 };
 use crate::common::{get_nodes, make_device, DeviceDefinition};
-use crate::JoypadStickPosition;
+use crate::{InputtinoError, JoypadStickPosition};
 
 pub struct SwitchJoypad {
     joypad: *mut crate::sys::InputtinoSwitchJoypad,
@@ -19,7 +19,7 @@ pub struct SwitchJoypad {
 }
 
 impl SwitchJoypad {
-    pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
+    pub fn new(device: &DeviceDefinition) -> Result<Self, InputtinoError> {
         make_device(inputtino_joypad_switch_create, device)
             .map(|joypad| SwitchJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
     }
@@ -50,7 +50,7 @@ impl SwitchJoypad {
         }
     }
 
-    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
+    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, InputtinoError> {
         get_nodes(inputtino_joypad_switch_get_nodes, self.joypad)
     }
 }

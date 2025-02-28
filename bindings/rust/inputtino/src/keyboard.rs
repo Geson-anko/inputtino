@@ -8,18 +8,19 @@ use crate::sys::{
     inputtino_keyboard_release,
     inputtino_keyboard_destroy
 };
+use crate::InputtinoError;
 
 pub struct Keyboard {
     kb: *mut crate::sys::InputtinoKeyboard,
 }
 
 impl Keyboard {
-    pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
+    pub fn new(device: &DeviceDefinition) -> Result<Self, InputtinoError> {
         make_device(inputtino_keyboard_create, device)
             .map(|kb| Keyboard { kb })
     }
 
-    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
+    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, InputtinoError> {
         get_nodes(inputtino_keyboard_get_nodes, self.kb)
     }
 

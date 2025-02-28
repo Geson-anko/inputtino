@@ -1,7 +1,7 @@
 use std::ffi::{c_int, c_void};
 use std::path::PathBuf;
 
-use crate::JoypadStickPosition;
+use crate::{InputtinoError, JoypadStickPosition};
 use crate::common::{get_nodes, make_device, DeviceDefinition};
 use crate::sys::{
     inputtino_joypad_xone_create,
@@ -19,7 +19,7 @@ pub struct XboxOneJoypad {
 }
 
 impl XboxOneJoypad {
-    pub fn new(device: &DeviceDefinition) -> Result<Self, String> {
+    pub fn new(device: &DeviceDefinition) -> Result<Self, InputtinoError> {
         make_device(inputtino_joypad_xone_create, device)
             .map(|joypad| XboxOneJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
     }
@@ -50,7 +50,7 @@ impl XboxOneJoypad {
         }
     }
 
-    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, String> {
+    pub fn get_nodes(&self) -> Result<Vec<PathBuf>, InputtinoError> {
         get_nodes(inputtino_joypad_xone_get_nodes, self.joypad)
     }
 }
