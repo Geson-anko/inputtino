@@ -91,9 +91,9 @@ impl SwitchJoypad {
     /// });
     /// ```
     pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
-        self.on_rumble_fn = Box::new(on_rumble_fn);
+        let on_rumble_fn = Box::new(RumbleFunction { on_rumble_fn: Box::new(on_rumble_fn) });
         unsafe {
-            let state_ptr = self as *const _ as *mut c_void;
+            let state_ptr = Box::into_raw(on_rumble_fn) as *mut c_void;
             inputtino_joypad_switch_set_on_rumble(self.joypad, Some(on_rumble_c_fn), state_ptr);
         }
     }
@@ -111,9 +111,13 @@ impl Drop for SwitchJoypad {
     }
 }
 
+struct RumbleFunction {
+    on_rumble_fn: Box<dyn FnMut(i32, i32)>,
+}
+
 unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, user_data: *mut ::core::ffi::c_void) {
-    let joypad: &mut SwitchJoypad = &mut *(user_data as *mut SwitchJoypad);
-    (joypad.on_rumble_fn)(left_motor, right_motor);
+    let on_rumble_fn = user_data as *mut RumbleFunction;
+    ((*on_rumble_fn).on_rumble_fn)(left_motor, right_motor);
 }
 
 unsafe impl Send for SwitchJoypad { }

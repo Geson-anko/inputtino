@@ -51,14 +51,6 @@ impl PS5Joypad {
             })
     }
 
-    pub fn set_on_led(&mut self, on_led_fn: impl FnMut(i32, i32, i32) + 'static) {
-        self.on_led_fn = Box::new(on_led_fn);
-        unsafe {
-            let state_ptr = self as *const _ as *mut c_void;
-            inputtino_joypad_ps5_set_on_led(self.joypad, Some(on_led_c_fn), state_ptr);
-        }
-    }
-
     /// Set the state of all buttons.
     ///
     /// Any buttons that are not set are released if they were set before.
@@ -110,10 +102,27 @@ impl PS5Joypad {
     /// });
     /// ```
     pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
-        self.on_rumble_fn = Box::new(on_rumble_fn);
+        let on_rumble_fn = Box::new(RumbleFunction { on_rumble_fn: Box::new(on_rumble_fn) });
         unsafe {
-            let state_ptr = self as *const _ as *mut c_void;
+            let state_ptr = Box::into_raw(on_rumble_fn) as *mut c_void;
             inputtino_joypad_ps5_set_on_rumble(self.joypad, Some(on_rumble_c_fn), state_ptr);
+        }
+    }
+
+    /// Sets a callback to be called when this device receives a LED change event.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// device.set_on_led(|r, g, b| {
+    ///     println!("Received LED event with colors R: {r}, G: {g}, B: {b}");
+    /// });
+    /// ```
+    pub fn set_on_led(&mut self, on_led_fn: impl FnMut(i32, i32, i32) + 'static) {
+        let on_led_fn = Box::new(LedFunction { on_led_fn: Box::new(on_led_fn) });
+        unsafe {
+            let state_ptr = Box::into_raw(on_led_fn) as *mut c_void;
+            inputtino_joypad_ps5_set_on_led(self.joypad, Some(on_led_c_fn), state_ptr);
         }
     }
 
@@ -156,14 +165,22 @@ impl Drop for PS5Joypad {
     }
 }
 
+struct RumbleFunction {
+    on_rumble_fn: Box<dyn FnMut(i32, i32)>,
+}
+
+struct LedFunction {
+    on_led_fn: Box<dyn FnMut(i32, i32, i32)>,
+}
+
 unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, user_data: *mut ::core::ffi::c_void) {
-    let joypad: &mut PS5Joypad = &mut *(user_data as *mut PS5Joypad);
-    (joypad.on_rumble_fn)(left_motor, right_motor);
+    let on_rumble_fn = user_data as *mut RumbleFunction;
+    ((*on_rumble_fn).on_rumble_fn)(left_motor, right_motor);
 }
 
 unsafe extern "C" fn on_led_c_fn(r: c_int, g: c_int, b: c_int, user_data: *mut ::core::ffi::c_void) {
-    let joypad: &mut PS5Joypad = &mut *(user_data as *mut PS5Joypad);
-    (joypad.on_led_fn)(r, g, b);
+    let on_led_fn = user_data as *mut LedFunction;
+    ((*on_led_fn).on_led_fn)(r, g, b);
 }
 
 unsafe impl Send for PS5Joypad { }
