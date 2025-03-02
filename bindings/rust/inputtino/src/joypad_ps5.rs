@@ -18,8 +18,8 @@ use crate::sys::{
 /// Emulated PlayStation 5's DualSense joypad.
 pub struct PS5Joypad {
     joypad: *mut crate::sys::InputtinoPS5Joypad,
-    on_rumble_fn: Box<dyn FnMut(i32, i32)>,
-    on_led_fn: Box<dyn FnMut(i32, i32, i32)>,
+    on_rumble_fn: *mut c_void,
+    on_led_fn: *mut c_void,
 }
 
 impl PS5Joypad {
@@ -46,8 +46,8 @@ impl PS5Joypad {
         make_device(inputtino_joypad_ps5_create, device)
             .map(|joypad| PS5Joypad {
                 joypad,
-                on_rumble_fn: Box::new(|_, _| {}),
-                on_led_fn: Box::new(|_, _, _| {}),
+                on_rumble_fn: std::ptr::null_mut(),
+                on_led_fn: std::ptr::null_mut(),
             })
     }
 
@@ -103,9 +103,9 @@ impl PS5Joypad {
     /// ```
     pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
         let on_rumble_fn = Box::new(RumbleFunction { on_rumble_fn: Box::new(on_rumble_fn) });
+        self.on_rumble_fn = Box::into_raw(on_rumble_fn) as *mut c_void;
         unsafe {
-            let state_ptr = Box::into_raw(on_rumble_fn) as *mut c_void;
-            inputtino_joypad_ps5_set_on_rumble(self.joypad, Some(on_rumble_c_fn), state_ptr);
+            inputtino_joypad_ps5_set_on_rumble(self.joypad, Some(on_rumble_c_fn), self.on_rumble_fn);
         }
     }
 
@@ -120,9 +120,9 @@ impl PS5Joypad {
     /// ```
     pub fn set_on_led(&mut self, on_led_fn: impl FnMut(i32, i32, i32) + 'static) {
         let on_led_fn = Box::new(LedFunction { on_led_fn: Box::new(on_led_fn) });
+        self.on_led_fn = Box::into_raw(on_led_fn) as *mut c_void;
         unsafe {
-            let state_ptr = Box::into_raw(on_led_fn) as *mut c_void;
-            inputtino_joypad_ps5_set_on_led(self.joypad, Some(on_led_c_fn), state_ptr);
+            inputtino_joypad_ps5_set_on_led(self.joypad, Some(on_led_c_fn), self.on_led_fn);
         }
     }
 
@@ -161,7 +161,14 @@ impl Drop for PS5Joypad {
     fn drop(&mut self) {
         unsafe {
             inputtino_joypad_ps5_destroy(self.joypad);
+            if !self.on_rumble_fn.is_null() {
+                drop(Box::from_raw(self.on_rumble_fn as *mut RumbleFunction));
+            }
+            if !self.on_led_fn.is_null() {
+                drop(Box::from_raw(self.on_led_fn as *mut LedFunction));
+            }
         }
+
     }
 }
 

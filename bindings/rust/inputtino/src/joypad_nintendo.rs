@@ -16,7 +16,7 @@ use crate::{InputtinoError, JoypadStickPosition};
 /// Emulated Nintendo Switch joypad.
 pub struct SwitchJoypad {
     joypad: *mut crate::sys::InputtinoSwitchJoypad,
-    on_rumble_fn: Box<dyn FnMut(i32, i32)>,
+    on_rumble_fn: *mut c_void,
 }
 
 impl SwitchJoypad {
@@ -37,7 +37,7 @@ impl SwitchJoypad {
     /// ```
     pub fn new(device: &DeviceDefinition) -> Result<Self, InputtinoError> {
         make_device(inputtino_joypad_switch_create, device)
-            .map(|joypad| SwitchJoypad { joypad, on_rumble_fn: Box::new(|_, _| {}) })
+            .map(|joypad| SwitchJoypad { joypad, on_rumble_fn: std::ptr::null_mut() })
     }
 
     /// Set the state of all buttons.
@@ -92,9 +92,9 @@ impl SwitchJoypad {
     /// ```
     pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
         let on_rumble_fn = Box::new(RumbleFunction { on_rumble_fn: Box::new(on_rumble_fn) });
+        self.on_rumble_fn = Box::into_raw(on_rumble_fn) as *mut c_void;
         unsafe {
-            let state_ptr = Box::into_raw(on_rumble_fn) as *mut c_void;
-            inputtino_joypad_switch_set_on_rumble(self.joypad, Some(on_rumble_c_fn), state_ptr);
+            inputtino_joypad_switch_set_on_rumble(self.joypad, Some(on_rumble_c_fn), self.on_rumble_fn);
         }
     }
 
@@ -107,6 +107,9 @@ impl Drop for SwitchJoypad {
     fn drop(&mut self) {
         unsafe {
             inputtino_joypad_switch_destroy(self.joypad);
+            if !self.on_rumble_fn.is_null() {
+                drop(Box::from_raw(self.on_rumble_fn as *mut RumbleFunction));
+            }
         }
     }
 }
