@@ -4,3 +4,8 @@
 !CMakeLists.txt
 !include
 !cmake/
+!docker/startup.sh
+!share/
+
+# Rust bindings
+!bindings/rust/

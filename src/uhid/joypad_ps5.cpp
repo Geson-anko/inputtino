@@ -493,10 +493,10 @@ void PS5Joypad::place_finger(int finger_nr, uint16_t x, uint16_t y) {
     this->_state->current_state.points[finger_nr].contact = 0;
 
     this->_state->current_state.points[finger_nr].x_lo = static_cast<uint8_t>(x & 0x00FF);
-    this->_state->current_state.points[finger_nr].x_hi = static_cast<uint8_t>((x & 0xFF00) >> 8);
+    this->_state->current_state.points[finger_nr].x_hi = static_cast<uint8_t>((x & 0x0F00) >> 8);
 
-    this->_state->current_state.points[finger_nr].y_lo = static_cast<uint8_t>((y & 0x00F0) << 4);
-    this->_state->current_state.points[finger_nr].y_hi = static_cast<uint8_t>(y >> 4);
+    this->_state->current_state.points[finger_nr].y_lo = static_cast<uint8_t>(y & 0x000F);
+    this->_state->current_state.points[finger_nr].y_hi = static_cast<uint8_t>((y & 0x0FF0) >> 4);
 
     send_report(*this->_state);
   }

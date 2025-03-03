@@ -76,3 +76,31 @@ mouse.click(MouseButton.RIGHT, duration=0.5)  # Hold for 0.5 seconds
 mouse.scroll_vertical(120)  # Scroll up
 mouse.scroll_horizontal(-120)  # Scroll left
 ```
+
+## Using the Rust bindings
+
+After building and installing `inputtino` you can use the Rust bindings by adding the following to your `Cargo.toml`:
+
+```toml
+[dependencies]
+inputtino = { git = "https://github.com/games-on-whales/inputtino.git", branch="stable" }
+```
+
+Example usage:
+
+```rust
+let device = DeviceDefinition::new(
+        "Rusty Keyboard",
+        0xAB,
+        0xCD,
+        0xEF,
+        "Rusty Keyboard Phys",
+        "Rusty Keyboard Uniq",
+    );
+let keyboard = Keyboard::new(&device).unwrap();
+
+keyboard.press_key(0x41); // KEY_A
+keyboard.release_key(0x41);
+```
+
+See the [tests](bindings/rust/inputtino/tests) for more examples.
