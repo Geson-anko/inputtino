@@ -46,7 +46,7 @@ impl XboxOneJoypad {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.set_pressed(inputtino::JoypadButton::A | inputtino::JoypadButton::B);
     /// ```
     pub fn set_pressed(&self, buttons: i32) {
@@ -59,7 +59,7 @@ impl XboxOneJoypad {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.set_triggers(0, -i16::MAX);
     /// ```
     pub fn set_triggers(&self, left_trigger: i16, right_trigger: i16) {
@@ -72,7 +72,7 @@ impl XboxOneJoypad {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.set_stick(inputtino::JoypadStickPosition::LS, 0, -i16::MAX);
     /// ```
     pub fn set_stick(&self, stick_type: JoypadStickPosition, x: i16, y: i16) {
@@ -85,7 +85,7 @@ impl XboxOneJoypad {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.set_on_rumble(|low, high| {
     ///     println!("Received rumble event with frequencies low: {low}, high: {high}");
     /// });

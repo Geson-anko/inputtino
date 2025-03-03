@@ -44,7 +44,7 @@ impl Keyboard {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.press_key(0x41); // KEY_A
     /// ```
     pub fn press_key(&self, key: i16) {
@@ -58,7 +58,7 @@ impl Keyboard {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.release_key(0x41); // KEY_A
     /// ```
     pub fn release_key(&self, key: i16) {

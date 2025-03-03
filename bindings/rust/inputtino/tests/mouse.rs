@@ -22,8 +22,8 @@ fn test_inputtino_mouse() {
         assert_eq!(nodes.len(), 2);
 
         // Check that the nodes start with /dev/input/event
-        assert!(nodes[0].starts_with("/dev/input/event"));
-        assert!(nodes[1].starts_with("/dev/input/event"));
+        assert!(nodes[0].to_str().unwrap().starts_with("/dev/input/event"));
+        assert!(nodes[1].to_str().unwrap().starts_with("/dev/input/event"));
     }
 
     let mut input = Libinput::new_from_path(NixInterface);

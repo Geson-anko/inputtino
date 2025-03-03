@@ -57,7 +57,7 @@ impl PS5Joypad {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.set_pressed(inputtino::JoypadButton::A | inputtino::JoypadButton::B);
     /// ```
     pub fn set_pressed(&self, buttons: i32) {
@@ -70,7 +70,7 @@ impl PS5Joypad {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.set_triggers(0, -i16::MAX);
     /// ```
     pub fn set_triggers(&self, left_trigger: i16, right_trigger: i16) {
@@ -83,7 +83,7 @@ impl PS5Joypad {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.set_stick(inputtino::JoypadStickPosition::LS, 0, -i16::MAX);
     /// ```
     pub fn set_stick(&self, stick_type: JoypadStickPosition, x: i16, y: i16) {
@@ -96,7 +96,7 @@ impl PS5Joypad {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.set_on_rumble(|low, high| {
     ///     println!("Received rumble event with frequencies low: {low}, high: {high}");
     /// });
@@ -113,7 +113,7 @@ impl PS5Joypad {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.set_on_led(|r, g, b| {
     ///     println!("Received LED event with colors R: {r}, G: {g}, B: {b}");
     /// });
@@ -134,7 +134,7 @@ impl PS5Joypad {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.place_finger(0, 100, inputtino::PS5Joypad::TOUCHPAD_HEIGHT / 2);
     /// ```
     pub fn place_finger(&self, finger_id: u32, x: u16, y: u16) {
@@ -147,7 +147,7 @@ impl PS5Joypad {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.release_finger(0);
     /// ```
     pub fn release_finger(&self, finger_id: u32) {

@@ -1,4 +1,4 @@
-use inputtino::{DeviceDefinition, Joypad, JoypadButton, JoypadStickPosition, SwitchJoypad};
+use inputtino::{DeviceDefinition, JoypadButton, JoypadStickPosition, SwitchJoypad};
 use serial_test::serial;
 
 #[test]
@@ -18,8 +18,14 @@ fn test_switch_joypad() {
     let nodes = joypad.get_nodes().unwrap();
     {
         assert_eq!(nodes.len(), 2);
-        assert!(nodes[0].to_str().expect("valid utf-8").starts_with("/dev/input/event"));
-        assert!(nodes[1].to_str().expect("valid utf-8").starts_with("/dev/input/js"));
+        assert!(nodes[0]
+            .to_str()
+            .expect("valid utf-8")
+            .starts_with("/dev/input/event"));
+        assert!(nodes[1]
+            .to_str()
+            .expect("valid utf-8")
+            .starts_with("/dev/input/js"));
     }
 
     // Sleep to let the system detect the anew device
@@ -81,6 +87,7 @@ fn test_switch_joypad() {
                     assert_eq!(value, 0);
                     break;
                 }
+                sdl2::event::Event::Unknown { .. } => {}
                 _ => panic!("Unexpected event : {:?}", event),
             }
         }

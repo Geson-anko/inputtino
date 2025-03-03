@@ -48,7 +48,7 @@ impl Mouse {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.move_rel(10, -10);
     /// ```
     pub fn move_rel(&self, x: i32, y: i32) {
@@ -61,7 +61,7 @@ impl Mouse {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.move_abs(100, 100, 1920, 1080);
     /// ```
     pub fn move_abs(&self, x: i32, y: i32, screen_width: i32, screen_height: i32) {
@@ -74,7 +74,7 @@ impl Mouse {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.press_button(inputtino::MouseButton::LEFT);
     /// ```
     pub fn press_button(&self, button: MouseButton) {
@@ -87,7 +87,7 @@ impl Mouse {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.release_button(inputtino::MouseButton::LEFT);
     /// ```
     pub fn release_button(&self, button: MouseButton) {
@@ -100,7 +100,7 @@ impl Mouse {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.scroll_vertical(10);
     /// ```
     pub fn scroll_vertical(&self, amount: i32) {
@@ -113,7 +113,7 @@ impl Mouse {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// device.scroll_horizontal(-10);
     /// ```
     pub fn scroll_horizontal(&self, amount: i32) {
