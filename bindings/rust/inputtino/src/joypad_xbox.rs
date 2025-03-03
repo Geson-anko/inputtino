@@ -1,17 +1,13 @@
 use std::ffi::{c_int, c_void};
 use std::path::PathBuf;
 
-use crate::{InputtinoError, JoypadStickPosition};
 use crate::common::{get_nodes, make_device, DeviceDefinition};
 use crate::sys::{
-    inputtino_joypad_xone_create,
-    inputtino_joypad_xone_destroy,
-    inputtino_joypad_xone_get_nodes,
-    inputtino_joypad_xone_set_on_rumble,
-    inputtino_joypad_xone_set_pressed_buttons,
-    inputtino_joypad_xone_set_stick,
-    inputtino_joypad_xone_set_triggers,
+    inputtino_joypad_xone_create, inputtino_joypad_xone_destroy, inputtino_joypad_xone_get_nodes,
+    inputtino_joypad_xone_set_on_rumble, inputtino_joypad_xone_set_pressed_buttons,
+    inputtino_joypad_xone_set_stick, inputtino_joypad_xone_set_triggers,
 };
+use crate::{InputtinoError, JoypadStickPosition};
 
 /// Emulated XBox One joypad.
 pub struct XboxOneJoypad {
@@ -36,8 +32,10 @@ impl XboxOneJoypad {
     /// let device = inputtino::SwitchJoypad::new(&definition);
     /// ```
     pub fn new(device: &DeviceDefinition) -> Result<Self, InputtinoError> {
-        make_device(inputtino_joypad_xone_create, device)
-            .map(|joypad| XboxOneJoypad { joypad, on_rumble_fn: std::ptr::null_mut() })
+        make_device(inputtino_joypad_xone_create, device).map(|joypad| XboxOneJoypad {
+            joypad,
+            on_rumble_fn: std::ptr::null_mut(),
+        })
     }
 
     /// Set the state of all buttons.
@@ -91,10 +89,16 @@ impl XboxOneJoypad {
     /// });
     /// ```
     pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
-        let on_rumble_fn = Box::new(RumbleFunction { on_rumble_fn: Box::new(on_rumble_fn) });
+        let on_rumble_fn = Box::new(RumbleFunction {
+            on_rumble_fn: Box::new(on_rumble_fn),
+        });
         self.on_rumble_fn = Box::into_raw(on_rumble_fn) as *mut c_void;
         unsafe {
-            inputtino_joypad_xone_set_on_rumble(self.joypad, Some(on_rumble_c_fn), self.on_rumble_fn);
+            inputtino_joypad_xone_set_on_rumble(
+                self.joypad,
+                Some(on_rumble_c_fn),
+                self.on_rumble_fn,
+            );
         }
     }
 
@@ -118,9 +122,13 @@ struct RumbleFunction {
     on_rumble_fn: Box<dyn FnMut(i32, i32)>,
 }
 
-unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, user_data: *mut ::core::ffi::c_void) {
+unsafe extern "C" fn on_rumble_c_fn(
+    left_motor: c_int,
+    right_motor: c_int,
+    user_data: *mut ::core::ffi::c_void,
+) {
     let on_rumble_fn = user_data as *mut RumbleFunction;
     ((*on_rumble_fn).on_rumble_fn)(left_motor, right_motor);
 }
 
-unsafe impl Send for XboxOneJoypad { }
+unsafe impl Send for XboxOneJoypad {}

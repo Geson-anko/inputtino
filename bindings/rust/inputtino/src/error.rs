@@ -9,7 +9,7 @@ pub enum InputtinoError {
 impl std::fmt::Display for InputtinoError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            InputtinoError::Generic(error_message) => write!(f, "{}", error_message)
+            InputtinoError::Generic(error_message) => write!(f, "{}", error_message),
         }
     }
 }

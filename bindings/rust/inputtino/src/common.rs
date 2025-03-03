@@ -1,4 +1,7 @@
-use crate::{sys::{InputtinoDeviceDefinition, InputtinoErrorHandler}, InputtinoError};
+use crate::{
+    sys::{InputtinoDeviceDefinition, InputtinoErrorHandler},
+    InputtinoError,
+};
 use std::{ffi::CString, path::PathBuf};
 
 /// Definition of the type of device to emulate.
@@ -101,7 +104,9 @@ pub(crate) fn make_device<T>(
     let device = unsafe { f(&definition.def, &error_handler) };
     if device.is_null() {
         let error_msg = error_str.to_string_lossy();
-        Err(InputtinoError::Generic(format!("Failed to create input device: {error_msg}")))
+        Err(InputtinoError::Generic(format!(
+            "Failed to create input device: {error_msg}"
+        )))
     } else {
         Ok(device)
     }

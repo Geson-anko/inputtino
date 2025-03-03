@@ -1,28 +1,36 @@
-use input::{Event, Libinput};
-use input::event::DeviceEvent;
 use input::event::keyboard::KeyboardEventTrait;
-use inputtino::{
-    DeviceDefinition,
-    Keyboard,
-};
+use input::event::DeviceEvent;
+use input::{Event, Libinput};
+use inputtino::{DeviceDefinition, Keyboard};
 mod common;
 use crate::common::{NixInterface, SyncEvent};
 
-
 #[test]
 fn test_inputtino_keyboard() {
-    let device = DeviceDefinition::new("Rusty Keyboard", 0xAB, 0xCD, 0xEF, "Rusty Keyboard Phys", "Rusty Keyboard Uniq");
+    let device = DeviceDefinition::new(
+        "Rusty Keyboard",
+        0xAB,
+        0xCD,
+        0xEF,
+        "Rusty Keyboard Phys",
+        "Rusty Keyboard Uniq",
+    );
     let keyboard = Keyboard::new(&device).unwrap();
     let nodes = keyboard.get_nodes().unwrap();
     {
         assert_eq!(nodes.len(), 1);
 
         // Check that the node start with /dev/input/event
-        assert!(nodes[0].to_str().expect("valid utf-8").starts_with("/dev/input/event"));
+        assert!(nodes[0]
+            .to_str()
+            .expect("valid utf-8")
+            .starts_with("/dev/input/event"));
     }
 
     let mut input = Libinput::new_from_path(NixInterface);
-    let kb_dev = input.path_add_device(nodes[0].to_str().expect("valid utf-8")).expect("to get the device");
+    let kb_dev = input
+        .path_add_device(nodes[0].to_str().expect("valid utf-8"))
+        .expect("to get the device");
 
     {
         assert_eq!(kb_dev.name(), "Rusty Keyboard");
@@ -33,7 +41,8 @@ fn test_inputtino_keyboard() {
         }
     }
 
-    { // Test keyboard key press
+    {
+        // Test keyboard key press
         keyboard.press_key(0x41); // KEY_A
 
         let ev = input.wait_next_event();
@@ -47,7 +56,8 @@ fn test_inputtino_keyboard() {
         }
     }
 
-    { // Test keyboard key release
+    {
+        // Test keyboard key release
         keyboard.release_key(0x41);
 
         let ev = input.wait_next_event().unwrap();

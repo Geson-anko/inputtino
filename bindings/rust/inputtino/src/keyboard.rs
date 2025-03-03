@@ -2,11 +2,8 @@ use std::path::PathBuf;
 
 use crate::common::{get_nodes, make_device, DeviceDefinition};
 use crate::sys::{
-    inputtino_keyboard_create,
-    inputtino_keyboard_get_nodes,
-    inputtino_keyboard_press,
-    inputtino_keyboard_release,
-    inputtino_keyboard_destroy
+    inputtino_keyboard_create, inputtino_keyboard_destroy, inputtino_keyboard_get_nodes,
+    inputtino_keyboard_press, inputtino_keyboard_release,
 };
 use crate::InputtinoError;
 
@@ -32,8 +29,7 @@ impl Keyboard {
     /// let device = inputtino::Keyboard::new(&definition);
     /// ```
     pub fn new(device: &DeviceDefinition) -> Result<Self, InputtinoError> {
-        make_device(inputtino_keyboard_create, device)
-            .map(|kb| Keyboard { kb })
+        make_device(inputtino_keyboard_create, device).map(|kb| Keyboard { kb })
     }
 
     pub fn get_nodes(&self) -> Result<Vec<PathBuf>, InputtinoError> {
@@ -77,4 +73,4 @@ impl Drop for Keyboard {
     }
 }
 
-unsafe impl Send for Keyboard { }
+unsafe impl Send for Keyboard {}

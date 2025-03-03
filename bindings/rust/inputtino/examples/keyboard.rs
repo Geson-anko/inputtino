@@ -1,7 +1,14 @@
 use inputtino::{DeviceDefinition, Keyboard};
 
 fn main() {
-    let definition = DeviceDefinition::new("Rusty Keyboard", 0xAB, 0xCD, 0xEF, "Rusty Keyboard Phys", "Rusty Keyboard Uniq");
+    let definition = DeviceDefinition::new(
+        "Rusty Keyboard",
+        0xAB,
+        0xCD,
+        0xEF,
+        "Rusty Keyboard Phys",
+        "Rusty Keyboard Uniq",
+    );
     let keyboard = Keyboard::new(&definition).expect("failed to create fake keyboard");
 
     // Type the word "inputtino".

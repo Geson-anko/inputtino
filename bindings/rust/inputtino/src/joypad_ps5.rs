@@ -1,19 +1,15 @@
+use inputtino_sys::{inputtino_joypad_ps5_place_finger, inputtino_joypad_ps5_release_finger};
 use std::ffi::{c_int, c_void};
 use std::path::PathBuf;
-use inputtino_sys::{inputtino_joypad_ps5_place_finger, inputtino_joypad_ps5_release_finger};
 
-use crate::{InputtinoError, JoypadStickPosition};
 use crate::common::{get_nodes, make_device, DeviceDefinition};
 use crate::sys::{
-    inputtino_joypad_ps5_create,
-    inputtino_joypad_ps5_destroy,
-    inputtino_joypad_ps5_get_nodes,
-    inputtino_joypad_ps5_set_on_rumble,
-    inputtino_joypad_ps5_set_on_led,
-    inputtino_joypad_ps5_set_pressed_buttons,
-    inputtino_joypad_ps5_set_stick,
+    inputtino_joypad_ps5_create, inputtino_joypad_ps5_destroy, inputtino_joypad_ps5_get_nodes,
+    inputtino_joypad_ps5_set_on_led, inputtino_joypad_ps5_set_on_rumble,
+    inputtino_joypad_ps5_set_pressed_buttons, inputtino_joypad_ps5_set_stick,
     inputtino_joypad_ps5_set_triggers,
 };
+use crate::{InputtinoError, JoypadStickPosition};
 
 /// Emulated PlayStation 5's DualSense joypad.
 pub struct PS5Joypad {
@@ -43,12 +39,11 @@ impl PS5Joypad {
     /// let device = inputtino::SwitchJoypad::new(&definition);
     /// ```
     pub fn new(device: &DeviceDefinition) -> Result<Self, InputtinoError> {
-        make_device(inputtino_joypad_ps5_create, device)
-            .map(|joypad| PS5Joypad {
-                joypad,
-                on_rumble_fn: std::ptr::null_mut(),
-                on_led_fn: std::ptr::null_mut(),
-            })
+        make_device(inputtino_joypad_ps5_create, device).map(|joypad| PS5Joypad {
+            joypad,
+            on_rumble_fn: std::ptr::null_mut(),
+            on_led_fn: std::ptr::null_mut(),
+        })
     }
 
     /// Set the state of all buttons.
@@ -102,10 +97,16 @@ impl PS5Joypad {
     /// });
     /// ```
     pub fn set_on_rumble(&mut self, on_rumble_fn: impl FnMut(i32, i32) + 'static) {
-        let on_rumble_fn = Box::new(RumbleFunction { on_rumble_fn: Box::new(on_rumble_fn) });
+        let on_rumble_fn = Box::new(RumbleFunction {
+            on_rumble_fn: Box::new(on_rumble_fn),
+        });
         self.on_rumble_fn = Box::into_raw(on_rumble_fn) as *mut c_void;
         unsafe {
-            inputtino_joypad_ps5_set_on_rumble(self.joypad, Some(on_rumble_c_fn), self.on_rumble_fn);
+            inputtino_joypad_ps5_set_on_rumble(
+                self.joypad,
+                Some(on_rumble_c_fn),
+                self.on_rumble_fn,
+            );
         }
     }
 
@@ -119,7 +120,9 @@ impl PS5Joypad {
     /// });
     /// ```
     pub fn set_on_led(&mut self, on_led_fn: impl FnMut(i32, i32, i32) + 'static) {
-        let on_led_fn = Box::new(LedFunction { on_led_fn: Box::new(on_led_fn) });
+        let on_led_fn = Box::new(LedFunction {
+            on_led_fn: Box::new(on_led_fn),
+        });
         self.on_led_fn = Box::into_raw(on_led_fn) as *mut c_void;
         unsafe {
             inputtino_joypad_ps5_set_on_led(self.joypad, Some(on_led_c_fn), self.on_led_fn);
@@ -168,7 +171,6 @@ impl Drop for PS5Joypad {
                 drop(Box::from_raw(self.on_led_fn as *mut LedFunction));
             }
         }
-
     }
 }
 
@@ -180,14 +182,23 @@ struct LedFunction {
     on_led_fn: Box<dyn FnMut(i32, i32, i32)>,
 }
 
-unsafe extern "C" fn on_rumble_c_fn(left_motor: c_int, right_motor: c_int, user_data: *mut ::core::ffi::c_void) {
+unsafe extern "C" fn on_rumble_c_fn(
+    left_motor: c_int,
+    right_motor: c_int,
+    user_data: *mut ::core::ffi::c_void,
+) {
     let on_rumble_fn = user_data as *mut RumbleFunction;
     ((*on_rumble_fn).on_rumble_fn)(left_motor, right_motor);
 }
 
-unsafe extern "C" fn on_led_c_fn(r: c_int, g: c_int, b: c_int, user_data: *mut ::core::ffi::c_void) {
+unsafe extern "C" fn on_led_c_fn(
+    r: c_int,
+    g: c_int,
+    b: c_int,
+    user_data: *mut ::core::ffi::c_void,
+) {
     let on_led_fn = user_data as *mut LedFunction;
     ((*on_led_fn).on_led_fn)(r, g, b);
 }
 
-unsafe impl Send for PS5Joypad { }
+unsafe impl Send for PS5Joypad {}
