@@ -2,9 +2,9 @@ name: Test Rust bindings
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "stable" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "stable" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -18,7 +18,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Setup dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake libevdev-dev pkg-config
+      shell: bash
+
     - name: Build
+      working-directory: bindings/rust
       run: |
         cargo build --verbose
       shell: bash
