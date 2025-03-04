@@ -8,8 +8,9 @@ use crate::sys::{
     inputtino_joypad_ps5_set_on_led, inputtino_joypad_ps5_set_on_rumble,
     inputtino_joypad_ps5_set_pressed_buttons, inputtino_joypad_ps5_set_stick,
     inputtino_joypad_ps5_set_triggers, inputtino_joypad_ps5_set_motion,
+    inputtino_joypad_ps5_set_battery,
 };
-use crate::{InputtinoError, JoypadMotionType, JoypadStickPosition};
+use crate::{BatteryState, InputtinoError, JoypadMotionType, JoypadStickPosition};
 
 /// Emulated PlayStation 5's DualSense joypad.
 pub struct PS5Joypad {
@@ -159,7 +160,7 @@ impl PS5Joypad {
         }
     }
 
-    /// Sets the state of the gyro sensors.
+    /// Sets the state of the gyro or acceleration sensors.
     ///
     /// # Examples
     ///
@@ -169,6 +170,19 @@ impl PS5Joypad {
     pub fn set_motion(&self, motion_type: JoypadMotionType, x: f32, y: f32, z: f32) {
         unsafe {
             inputtino_joypad_ps5_set_motion(self.joypad, motion_type, x, y, z);
+        }
+    }
+
+    /// Sets the state of the battery.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// device.set_battery(BatteryState::BATTERY_DISCHARGING, 55);
+    /// ```
+    pub fn set_battery(&self, battery_state: BatteryState, level: u8) {
+        unsafe {
+            inputtino_joypad_ps5_set_battery(self.joypad, battery_state, level as u16);
         }
     }
 }
