@@ -7,9 +7,9 @@ use crate::sys::{
     inputtino_joypad_ps5_create, inputtino_joypad_ps5_destroy, inputtino_joypad_ps5_get_nodes,
     inputtino_joypad_ps5_set_on_led, inputtino_joypad_ps5_set_on_rumble,
     inputtino_joypad_ps5_set_pressed_buttons, inputtino_joypad_ps5_set_stick,
-    inputtino_joypad_ps5_set_triggers,
+    inputtino_joypad_ps5_set_triggers, inputtino_joypad_ps5_set_motion,
 };
-use crate::{InputtinoError, JoypadStickPosition};
+use crate::{InputtinoError, JoypadMotionType, JoypadStickPosition};
 
 /// Emulated PlayStation 5's DualSense joypad.
 pub struct PS5Joypad {
@@ -156,6 +156,19 @@ impl PS5Joypad {
     pub fn release_finger(&self, finger_id: u32) {
         unsafe {
             inputtino_joypad_ps5_release_finger(self.joypad, finger_id as i32);
+        }
+    }
+
+    /// Sets the state of the gyro sensors.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// device.set_motion(JoypadMotionType::ACCELERATION, 0.0, 0.0, 1.0);
+    /// ```
+    pub fn set_motion(&self, motion_type: JoypadMotionType, x: f32, y: f32, z: f32) {
+        unsafe {
+            inputtino_joypad_ps5_set_motion(self.joypad, motion_type, x, y, z);
         }
     }
 }
