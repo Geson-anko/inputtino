@@ -13,3 +13,5 @@ impl std::fmt::Display for InputtinoError {
         }
     }
 }
+
+impl std::error::Error for InputtinoError { }
