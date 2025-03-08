@@ -344,7 +344,8 @@ std::vector<std::string> PS5Joypad::get_nodes() const {
 void PS5Joypad::set_pressed_buttons(unsigned int pressed) {
   { // First reset everything to non-pressed
     this->_state->current_state.buttons[0] = 0;
-    this->_state->current_state.buttons[1] = 0;
+    // Don't reset L2 and R2, these are handled in set_triggers
+    this->_state->current_state.buttons[1] &= (uhid::L2 | uhid::R2);
     this->_state->current_state.buttons[2] = 0;
     this->_state->current_state.buttons[3] = 0;
   }
@@ -419,6 +420,17 @@ void PS5Joypad::set_pressed_buttons(unsigned int pressed) {
 void PS5Joypad::set_triggers(int16_t left, int16_t right) {
   this->_state->current_state.z = scale_value(left, 0, 255, uhid::PS5_AXIS_MIN, uhid::PS5_AXIS_MAX);
   this->_state->current_state.rz = scale_value(right, 0, 255, uhid::PS5_AXIS_MIN, uhid::PS5_AXIS_MAX);
+
+  if (left == 0)
+    this->_state->current_state.buttons[1] &= ~uhid::L2;
+  else
+    this->_state->current_state.buttons[1] |= uhid::L2;
+
+  if (right == 0)
+    this->_state->current_state.buttons[1] &= ~uhid::R2;
+  else
+    this->_state->current_state.buttons[1] |= uhid::R2;
+
   send_report(*this->_state);
 }
 void PS5Joypad::set_stick(Joypad::STICK_POSITION stick_type, short x, short y) {
