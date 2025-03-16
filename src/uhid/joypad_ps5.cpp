@@ -135,7 +135,14 @@ static void on_uhid_event(std::shared_ptr<PS5JoypadState> state, uhid_event ev, 
       auto report_usb = (uhid::dualsense_output_report_usb *)ev.u.output.data;
       report = report_usb->common;
     } else {
-      auto report_bt = (uhid::dualsense_output_report_bt *)ev.u.output.data;
+      // In everything *except* SDL, data[3] is a tag.
+      // SDL always seems to send 0x02 as seq_tag value, so we'll use that to detect it.
+      uhid::dualsense_output_report_bt *report_bt;
+      if (ev.u.output.data[1] == 0x02) {
+        report_bt = (uhid::dualsense_output_report_bt *)ev.u.output.data;
+      } else {
+        report_bt = (uhid::dualsense_output_report_bt *)&ev.u.output.data[1];
+      }
       report = report_bt->common;
     }
 
