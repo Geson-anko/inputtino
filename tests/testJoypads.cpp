@@ -6,6 +6,7 @@
 #include <iostream>
 #include <SDL.h>
 #include <thread>
+#include <uhid/ps5.hpp>
 
 using Catch::Matchers::Contains;
 using Catch::Matchers::ContainsSubstring;
@@ -402,6 +403,39 @@ TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL],[PS]") {
     }
   }
 
+  // Adaptive triggers aren't directly supported by SDL
+  // see:https://github.com/libsdl-org/SDL/issues/5125#issuecomment-1204261666
+  // see: HIDAPI_DriverPS5_RumbleJoystickTriggers()
+  // but we can send custom data to the device, the following code is adapted from
+  // https://github.com/libsdl-org/SDL/blob/d66483dfccfcdc4e03f719e318c7a76f963f22d9/test/testcontroller.c#L235-L255
+  {
+    auto trigger_event = std::make_shared<PS5Joypad::TriggerEffect>();
+    joypad.set_on_trigger_effect([trigger_event](const PS5Joypad::TriggerEffect &effect) { *trigger_event = effect; });
+
+    /* Resistance and vibration when trigger is pulled */
+    uint8_t left_effect_type = 0x06;
+    uint8_t left_effect[10] = {15, 63, 128, 0, 0, 0, 0, 0, 0, 0};
+    /* Constant resistance across entire trigger pull */
+    uint8_t right_effect_type = 0x01;
+    uint8_t right_effect[10] = {0, 110, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    uhid::dualsense_output_report_common state = {};
+    SDL_zero(state);
+    state.valid_flag0 |= (uhid::RIGHT_TRIGGER_EFFECT | uhid::LEFT_TRIGGER_EFFECT);
+    state.right_trigger_effect_type = right_effect_type;
+    SDL_memcpy(state.right_trigger_effect, right_effect, sizeof(right_effect));
+    state.left_trigger_effect_type = left_effect_type;
+    SDL_memcpy(state.left_trigger_effect, left_effect, sizeof(left_effect));
+    SDL_GameControllerSendEffect(gc, &state, sizeof(state));
+
+    std::this_thread::sleep_for(15ms);
+    flush_sdl_events();
+    REQUIRE(trigger_event->type_left == left_effect_type);
+    REQUIRE(trigger_event->type_right == right_effect_type);
+    REQUIRE(std::equal(std::begin(trigger_event->left), std::end(trigger_event->left), std::begin(left_effect)));
+    REQUIRE(std::equal(std::begin(trigger_event->right), std::end(trigger_event->right), std::begin(right_effect)));
+  }
+
   { // Test creating a second device
     REQUIRE(SDL_NumJoysticks() == 1);
     auto joypad2 = std::move(*PS5Joypad::create());
@@ -418,10 +452,6 @@ TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL],[PS]") {
     REQUIRE(SDL_GameControllerGetType(gc2) == SDL_CONTROLLER_TYPE_PS5);
     SDL_GameControllerClose(gc2);
   }
-
-  // Adaptive triggers aren't supported by SDL
-  // see:https://github.com/libsdl-org/SDL/issues/5125#issuecomment-1204261666
-  // see: HIDAPI_DriverPS5_RumbleJoystickTriggers()
 
   SDL_GameControllerClose(gc);
 }

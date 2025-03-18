@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <inputtino/input.hpp>
 #include <optional>
 #include <uhid/ps5.hpp>
 #include <uhid/uhid.hpp>
@@ -25,6 +26,7 @@ struct PS5JoypadState {
 
   std::optional<std::function<void(int, int)>> on_rumble = std::nullopt;
   std::optional<std::function<void(int, int, int)>> on_led = std::nullopt;
+  std::optional<std::function<void(const PS5Joypad::TriggerEffect &)>> on_trigger_effect = std::nullopt;
   bool stop_repeat_thread = false;
   bool is_bluetooth = true;
 };

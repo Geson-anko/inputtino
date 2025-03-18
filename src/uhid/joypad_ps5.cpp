@@ -168,6 +168,21 @@ static void on_uhid_event(std::shared_ptr<PS5JoypadState> state, uhid_event ev, 
       }
     }
 
+    /**
+     * Trigger effects
+     */
+    if (report.valid_flag0 & uhid::RIGHT_TRIGGER_EFFECT || report.valid_flag0 & uhid::LEFT_TRIGGER_EFFECT) {
+      if (state->on_trigger_effect) {
+        PS5Joypad::TriggerEffect effect = {.type_left = report.left_trigger_effect_type,
+                                           .type_right = report.right_trigger_effect_type,
+                                           .left = {},
+                                           .right = {}};
+        std::copy(&report.left_trigger_effect[0], &report.left_trigger_effect[10], &effect.left[0]);
+        std::copy(&report.right_trigger_effect[0], &report.right_trigger_effect[10], &effect.right[0]);
+        (*state->on_trigger_effect)(effect);
+      }
+    }
+
     /*
      * LED
      */
@@ -472,9 +487,9 @@ static __le16 to_le_signed(float original, float value) {
 void PS5Joypad::set_motion(PS5Joypad::MOTION_TYPE type, float x, float y, float z) {
   switch (type) {
   case ACCELERATION: {
-    this->_state->current_state.accel[0] = to_le_signed(x, (x * uhid::SDL_STANDARD_GRAVITY * 100));
-    this->_state->current_state.accel[1] = to_le_signed(y, (y * uhid::SDL_STANDARD_GRAVITY * 100));
-    this->_state->current_state.accel[2] = to_le_signed(z, (z * uhid::SDL_STANDARD_GRAVITY * 100));
+    this->_state->current_state.accel[0] = to_le_signed(x, (x * uhid::SDL_STANDARD_GRAVITY_CONST * 100));
+    this->_state->current_state.accel[1] = to_le_signed(y, (y * uhid::SDL_STANDARD_GRAVITY_CONST * 100));
+    this->_state->current_state.accel[2] = to_le_signed(z, (z * uhid::SDL_STANDARD_GRAVITY_CONST * 100));
 
     send_report(*this->_state);
     break;
@@ -502,6 +517,10 @@ void PS5Joypad::set_battery(PS5Joypad::BATTERY_STATE state, int percentage) {
 
 void PS5Joypad::set_on_led(const std::function<void(int, int, int)> &callback) {
   this->_state->on_led = callback;
+}
+
+void PS5Joypad::set_on_trigger_effect(const std::function<void(const TriggerEffect &)> &callback) {
+  this->_state->on_trigger_effect = callback;
 }
 
 void PS5Joypad::place_finger(int finger_nr, uint16_t x, uint16_t y) {

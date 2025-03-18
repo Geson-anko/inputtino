@@ -428,6 +428,20 @@ public:
 
   void set_on_led(const std::function<void(int r, int g, int b)> &callback);
 
+  /**
+   * This is an opaque blob that is sent to the controller.
+   * There is some reversed engineered information here:
+   * https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db
+   */
+  struct TriggerEffect {
+    uint8_t type_left;
+    uint8_t type_right;
+    std::array<uint8_t, 10> left;
+    std::array<uint8_t, 10> right;
+  };
+
+  void set_on_trigger_effect(const std::function<void(const TriggerEffect &)> &callback);
+
 protected:
   typedef struct PS5JoypadState PS5JoypadState;
   std::shared_ptr<PS5JoypadState> _state;
