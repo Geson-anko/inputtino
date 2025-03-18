@@ -135,7 +135,18 @@ static void on_uhid_event(std::shared_ptr<PS5JoypadState> state, uhid_event ev, 
       auto report_usb = (uhid::dualsense_output_report_usb *)ev.u.output.data;
       report = report_usb->common;
     } else {
-      auto report_bt = (uhid::dualsense_output_report_bt *)ev.u.output.data;
+      uhid::dualsense_output_report_bt *report_bt = (uhid::dualsense_output_report_bt *)ev.u.output.data;
+      /*
+       * SDL2 sets the EnableHID flag and will send the output report straight after
+       * https://github.com/libsdl-org/SDL/blob/c8c4c9772758de2ae466d27f13eb3ed4233e3f32/src/joystick/hidapi/SDL_hidapi_ps5.c#L788-L789
+       *
+       * The Linux kernel instead, sets this as 0, properly set the SeqNo and adds a hardcoded `tag` field before the
+       * actual output report
+       * https://github.com/torvalds/linux/blob/305230142ae0637213bf6e04f6d9f10bbcb74af8/drivers/hid/hid-playstation.c#L1184-L1192
+       */
+      if (report_bt->EnableHID == 0) {
+        report_bt = (uhid::dualsense_output_report_bt *)&ev.u.output.data[1]; // Skip the tag field
+      }
       report = report_bt->common;
     }
 
@@ -263,13 +274,10 @@ template <typename T> std::string to_hex(T i) {
 
 std::string PS5Joypad::get_mac_address() const {
   std::stringstream stream;
-  stream << std::hex << std::setfill('0')
-         << std::setw(2) << (unsigned int)_state->mac_address[0] << ":"
-         << std::setw(2) << (unsigned int)_state->mac_address[1] << ":"
-         << std::setw(2) << (unsigned int)_state->mac_address[2] << ":"
-         << std::setw(2) << (unsigned int)_state->mac_address[3] << ":"
-         << std::setw(2) << (unsigned int)_state->mac_address[4] << ":"
-         << std::setw(2) << (unsigned int)_state->mac_address[5];
+  stream << std::hex << std::setfill('0') << std::setw(2) << (unsigned int)_state->mac_address[0] << ":" << std::setw(2)
+         << (unsigned int)_state->mac_address[1] << ":" << std::setw(2) << (unsigned int)_state->mac_address[2] << ":"
+         << std::setw(2) << (unsigned int)_state->mac_address[3] << ":" << std::setw(2)
+         << (unsigned int)_state->mac_address[4] << ":" << std::setw(2) << (unsigned int)_state->mac_address[5];
   return stream.str();
 }
 

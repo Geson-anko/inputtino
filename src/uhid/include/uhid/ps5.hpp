@@ -1,8 +1,8 @@
 #pragma once
 
+#include <crc32.hpp>
 #include <linux/uhid.h>
 #include <vector>
-#include <crc32.hpp>
 
 namespace uhid {
 
@@ -29,7 +29,7 @@ static constexpr float SDL_STANDARD_GRAVITY = 9.80665f;
  * https://github.com/torvalds/linux/blob/305230142ae0637213bf6e04f6d9f10bbcb74af8/drivers/hid/hid-playstation.c#L70-L72
  */
 static constexpr unsigned char PS_INPUT_CRC32_SEED = 0xA1;
-static constexpr auto PS_INPUT_CRC32= CRC32(&PS_INPUT_CRC32_SEED, 1);
+static constexpr auto PS_INPUT_CRC32 = CRC32(&PS_INPUT_CRC32_SEED, 1);
 static constexpr unsigned char PS_OUTPUT_CRC32_SEED = 0xA2;
 static constexpr auto PS_OUTPUT_CRC32 = CRC32(&PS_OUTPUT_CRC32_SEED, 1);
 static constexpr unsigned char PS_FEATURE_CRC32_SEED = 0xA3;
@@ -528,7 +528,14 @@ static constexpr uint8_t DS_OUTPUT_REPORT_BT = 0x31;
 
 struct dualsense_output_report_bt {
   uint8_t report_id; /* 0x31 */
-  uint8_t seq_tag;
+
+  /* Following has been taken from https://controllers.fandom.com/wiki/Sony_DualSense#Output_Reports */
+  uint8_t UNK1 : 1;      // -+
+  uint8_t EnableHID : 1; //  | - these 3 bits seem to act as an enum
+  uint8_t UNK2 : 1;      // -+
+  uint8_t UNK3 : 1;
+  uint8_t SeqNo : 4; // increment for every write
+
   struct dualsense_output_report_common common;
   uint8_t reserved[24];
   __le32 crc32;
