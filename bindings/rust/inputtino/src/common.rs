@@ -111,3 +111,6 @@ pub(crate) fn make_device<T>(
         Ok(device)
     }
 }
+
+unsafe impl Send for DeviceDefinition {}
+unsafe impl Sync for DeviceDefinition {}

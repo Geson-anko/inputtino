@@ -25,6 +25,7 @@ mod joypad_xbox;
 pub use inputtino_sys::{
     INPUTTINO_JOYPAD_BTN as JoypadButton, INPUTTINO_JOYPAD_MOTION_TYPE as JoypadMotionType,
     INPUTTINO_JOYPAD_STICK_POSITION as JoypadStickPosition, INPUTTINO_MOUSE_BUTTON as MouseButton,
+    BATTERY_STATE as BatteryState,
 };
 
 // Low level automatic c bindings.
