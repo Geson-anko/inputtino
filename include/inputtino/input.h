@@ -10,6 +10,7 @@
 #  include <inputtino/export_static.h>
 #endif
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -308,6 +309,10 @@ inputtino_joypad_ps5_set_battery(InputtinoPS5Joypad *joypad, enum BATTERY_STATE 
 typedef void (*InputtinoJoypadLEDFn)(int r, int g, int b, void *user_data);
 
 LIBINPUTTINO_EXPORT void inputtino_joypad_ps5_set_on_led(InputtinoPS5Joypad *joypad, InputtinoJoypadLEDFn led_fn, void *user_data);
+
+typedef void (*InputtinoJoypadTriggerFn)(uint8_t type_left, uint8_t type_right, const uint8_t *left, const uint8_t *right, void *user_data);
+
+LIBINPUTTINO_EXPORT void inputtino_joypad_ps5_set_on_trigger_effect(InputtinoPS5Joypad *joypad, InputtinoJoypadTriggerFn trigger_effect_fn, void *user_data);
 
 LIBINPUTTINO_EXPORT void inputtino_joypad_ps5_destroy(InputtinoPS5Joypad *joypad);
 

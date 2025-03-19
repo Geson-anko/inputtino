@@ -204,6 +204,7 @@ TEST_CASE("C PS5 API", "[C-API]") {
     inputtino_joypad_ps5_set_motion(ps_pad, INPUTTINO_JOYPAD_MOTION_TYPE::ACCELERATION, 1, 1, 1);
     inputtino_joypad_ps5_set_battery(ps_pad, BATTERY_STATE::BATTERY_DISCHARGING, 90);
     inputtino_joypad_ps5_set_on_led(ps_pad, [](int r, int g, int b, void *user_data) {}, nullptr);
+    inputtino_joypad_ps5_set_on_trigger_effect(ps_pad, [](uint8_t type_left, uint8_t type_right, const uint8_t *left, const uint8_t *right, void *user_data) {}, nullptr);
   }
 
   delete[] nodes;

@@ -91,6 +91,15 @@ void inputtino_joypad_ps5_set_on_led(InputtinoPS5Joypad *joypad, InputtinoJoypad
   }
 }
 
+void inputtino_joypad_ps5_set_on_trigger_effect(InputtinoPS5Joypad *joypad, InputtinoJoypadTriggerFn trigger_effect_fn, void *user_data) {
+  if (joypad) {
+    reinterpret_cast<inputtino::PS5Joypad *>(joypad)->set_on_trigger_effect(
+        [user_data, trigger_effect_fn](const inputtino::PS5Joypad::TriggerEffect &effect) {
+          trigger_effect_fn(effect.type_left, effect.type_right, effect.left.data(), effect.right.data(), user_data);
+        });
+  }
+}
+
 void inputtino_joypad_ps5_destroy(InputtinoPS5Joypad *joypad) {
   if (joypad) {
     auto joypad_ptr = reinterpret_cast<inputtino::PS5Joypad *>(joypad);
