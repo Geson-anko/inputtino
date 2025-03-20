@@ -27,6 +27,9 @@ struct PS5JoypadState {
   std::optional<std::function<void(int, int)>> on_rumble = std::nullopt;
   std::optional<std::function<void(int, int, int)>> on_led = std::nullopt;
   std::optional<std::function<void(const PS5Joypad::TriggerEffect &)>> on_trigger_effect = std::nullopt;
+  uint32_t last_left_trigger_event = 0;
+  uint32_t last_right_trigger_event = 0;
+
   bool stop_repeat_thread = false;
   bool is_bluetooth = true;
 };

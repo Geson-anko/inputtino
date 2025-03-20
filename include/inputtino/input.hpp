@@ -434,10 +434,15 @@ public:
    * https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db
    */
   struct TriggerEffect {
+    /**
+     * 0x04 - Right trigger
+     * 0x08 - Left trigger
+     */
+    uint8_t event_flags;
     uint8_t type_left;
     uint8_t type_right;
-    std::array<uint8_t, 10> left;
-    std::array<uint8_t, 10> right;
+    std::array<uint8_t, 10> left = {};
+    std::array<uint8_t, 10> right = {};
   };
 
   void set_on_trigger_effect(const std::function<void(const TriggerEffect &)> &callback);

@@ -310,7 +310,8 @@ typedef void (*InputtinoJoypadLEDFn)(int r, int g, int b, void *user_data);
 
 LIBINPUTTINO_EXPORT void inputtino_joypad_ps5_set_on_led(InputtinoPS5Joypad *joypad, InputtinoJoypadLEDFn led_fn, void *user_data);
 
-typedef void (*InputtinoJoypadTriggerFn)(uint8_t type_left, uint8_t type_right, const uint8_t *left, const uint8_t *right, void *user_data);
+typedef void (*InputtinoJoypadTriggerFn)(uint8_t type_left,
+                                         uint8_t event_flags, uint8_t type_right, const uint8_t *left, const uint8_t *right, void *user_data);
 
 LIBINPUTTINO_EXPORT void inputtino_joypad_ps5_set_on_trigger_effect(InputtinoPS5Joypad *joypad, InputtinoJoypadTriggerFn trigger_effect_fn, void *user_data);
 

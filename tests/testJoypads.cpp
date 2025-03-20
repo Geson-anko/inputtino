@@ -421,7 +421,7 @@ TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL],[PS]") {
 
     uhid::dualsense_output_report_common state = {};
     SDL_zero(state);
-    state.valid_flag0 |= (uhid::RIGHT_TRIGGER_EFFECT | uhid::LEFT_TRIGGER_EFFECT);
+    state.valid_flag0 |= (uhid::RIGHT_TRIGGER_EFFECT);
     state.right_trigger_effect_type = right_effect_type;
     SDL_memcpy(state.right_trigger_effect, right_effect, sizeof(right_effect));
     state.left_trigger_effect_type = left_effect_type;
@@ -430,6 +430,7 @@ TEST_CASE_METHOD(SDLTestsFixture, "PS Joypad", "[SDL],[PS]") {
 
     std::this_thread::sleep_for(15ms);
     flush_sdl_events();
+    REQUIRE(trigger_event->event_flags == uhid::RIGHT_TRIGGER_EFFECT);
     REQUIRE(trigger_event->type_left == left_effect_type);
     REQUIRE(trigger_event->type_right == right_effect_type);
     REQUIRE(std::equal(std::begin(trigger_event->left), std::end(trigger_event->left), std::begin(left_effect)));

@@ -171,18 +171,32 @@ static void on_uhid_event(std::shared_ptr<PS5JoypadState> state, uhid_event ev, 
     /**
      * Trigger effects
      */
-    if (report.valid_flag0 & uhid::RIGHT_TRIGGER_EFFECT || report.valid_flag0 & uhid::LEFT_TRIGGER_EFFECT) {
-      if (state->on_trigger_effect) {
-        // We encode 0xFF as no effect, client side should be able to ignore a specific trigger this way
-        uint8_t left_type = report.valid_flag0 & uhid::LEFT_TRIGGER_EFFECT ? report.left_trigger_effect_type : 0xFF;
-        uint8_t right_type = report.valid_flag0 & uhid::RIGHT_TRIGGER_EFFECT ? report.right_trigger_effect_type : 0xFF;
+    bool right_trigger = report.valid_flag0 & uhid::RIGHT_TRIGGER_EFFECT;
+    bool left_trigger = report.valid_flag0 & uhid::LEFT_TRIGGER_EFFECT;
+    if ((right_trigger || left_trigger) && state->on_trigger_effect) {
+      auto left_array_start = std::begin(report.left_trigger_effect);
+      auto left_array_end = std::end(report.left_trigger_effect);
+      auto right_array_start = std::begin(report.right_trigger_effect);
+      auto right_array_end = std::end(report.right_trigger_effect);
+      // We have to cache these values because these flags will be set as long as the effect is active
+      uint32_t left_trigger_hash = std::accumulate(left_array_start, left_array_end, 0ul);
+      uint32_t right_trigger_hash = std::accumulate(right_array_start, right_array_end, 0ul);
+      if ((left_trigger && state->last_left_trigger_event != left_trigger_hash) ||
+          (right_trigger && state->last_right_trigger_event != right_trigger_hash)) {
+        // First, update the cache
+        if (left_trigger)
+          state->last_left_trigger_event = left_trigger_hash;
+        if (right_trigger)
+          state->last_right_trigger_event = right_trigger_hash;
 
-        PS5Joypad::TriggerEffect effect = {.type_left = left_type,
-                                           .type_right = right_type,
-                                           .left = {},
-                                           .right = {}};
-        std::copy(&report.left_trigger_effect[0], &report.left_trigger_effect[10], &effect.left[0]);
-        std::copy(&report.right_trigger_effect[0], &report.right_trigger_effect[10], &effect.right[0]);
+        // Then, trigger the event
+        uint8_t event_flags = (report.valid_flag0 & uhid::LEFT_TRIGGER_EFFECT) |
+                              (report.valid_flag0 & uhid::RIGHT_TRIGGER_EFFECT);
+        PS5Joypad::TriggerEffect effect = {.event_flags = event_flags,
+                                           .type_left = report.left_trigger_effect_type,
+                                           .type_right = report.right_trigger_effect_type};
+        std::copy(left_array_start, left_array_end, std::begin(effect.left));
+        std::copy(right_array_start, right_array_end, std::begin(effect.right));
         (*state->on_trigger_effect)(effect);
       }
     }
