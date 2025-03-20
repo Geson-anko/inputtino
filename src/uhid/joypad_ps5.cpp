@@ -173,8 +173,12 @@ static void on_uhid_event(std::shared_ptr<PS5JoypadState> state, uhid_event ev, 
      */
     if (report.valid_flag0 & uhid::RIGHT_TRIGGER_EFFECT || report.valid_flag0 & uhid::LEFT_TRIGGER_EFFECT) {
       if (state->on_trigger_effect) {
-        PS5Joypad::TriggerEffect effect = {.type_left = report.left_trigger_effect_type,
-                                           .type_right = report.right_trigger_effect_type,
+        // We encode 0xFF as no effect, client side should be able to ignore a specific trigger this way
+        uint8_t left_type = report.valid_flag0 & uhid::LEFT_TRIGGER_EFFECT ? report.left_trigger_effect_type : 0xFF;
+        uint8_t right_type = report.valid_flag0 & uhid::RIGHT_TRIGGER_EFFECT ? report.right_trigger_effect_type : 0xFF;
+
+        PS5Joypad::TriggerEffect effect = {.type_left = left_type,
+                                           .type_right = right_type,
                                            .left = {},
                                            .right = {}};
         std::copy(&report.left_trigger_effect[0], &report.left_trigger_effect[10], &effect.left[0]);
