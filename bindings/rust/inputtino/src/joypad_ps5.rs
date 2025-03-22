@@ -137,15 +137,15 @@ impl PS5Joypad {
     /// # Examples
     ///
     /// ```ignore
-    /// device.set_on_trigger_effect(|type_left, type_right, left_effect, right_effect| {
+    /// device.set_on_trigger_effect(|trigger_event_flags, type_left, type_right, left_effect, right_effect| {
     ///     println!(
-    ///         "Received trigger effect event: type_left: {type_left}, type_right: {type_right}, \
+    ///         "Received trigger effect event: trigger_event_flags: {trigger_event_flags}, type_left: {type_left}, type_right: {type_right}, \
     ///         left_effect: {:?}, right_effect: {:?}",
     ///         left_effect, right_effect
     ///     );
     /// });
     /// ```
-    pub fn set_on_trigger_effect(&mut self, on_trigger_effect_fn: impl FnMut(u8, u8, &[u8], &[u8]) + 'static) {
+    pub fn set_on_trigger_effect(&mut self, on_trigger_effect_fn: impl FnMut(u8, u8, u8, &[u8], &[u8]) + 'static) {
         let on_trigger_effect_fn = Box::new(TriggerEffectFunction {
             on_trigger_effect_fn: Box::new(on_trigger_effect_fn),
         });
@@ -254,10 +254,11 @@ unsafe extern "C" fn on_led_c_fn(
 }
 
 struct TriggerEffectFunction {
-    on_trigger_effect_fn: Box<dyn FnMut(u8, u8, &[u8], &[u8])>,
+    on_trigger_effect_fn: Box<dyn FnMut(u8, u8, u8, &[u8], &[u8])>,
 }
 
 unsafe extern "C" fn on_trigger_effect_c_fn(
+    trigger_event_flags: u8,
     type_left: u8,
     type_right: u8,
     left: *const u8,
@@ -267,7 +268,13 @@ unsafe extern "C" fn on_trigger_effect_c_fn(
     let on_trigger_effect_fn = user_data as *mut TriggerEffectFunction;
     let left_effect = std::slice::from_raw_parts(left, 10);
     let right_effect = std::slice::from_raw_parts(right, 10);
-    ((*on_trigger_effect_fn).on_trigger_effect_fn)(type_left, type_right, left_effect, right_effect);
+    ((*on_trigger_effect_fn).on_trigger_effect_fn)(
+        trigger_event_flags,
+        type_left,
+        type_right,
+        left_effect,
+        right_effect,
+    );
 }
 
 unsafe impl Send for PS5Joypad {}
