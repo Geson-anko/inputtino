@@ -22,7 +22,7 @@ static constexpr int PS5_GYRO_RES_PER_DEG_S = 1024;
 static constexpr int PS5_GYRO_RANGE = (2048 * PS5_GYRO_RES_PER_DEG_S);
 static constexpr int PS5_TOUCHPAD_WIDTH = 1920;
 static constexpr int PS5_TOUCHPAD_HEIGHT = 1080;
-static constexpr float SDL_STANDARD_GRAVITY = 9.80665f;
+static constexpr float SDL_STANDARD_GRAVITY_CONST = 9.80665f;
 
 /*
  * Bluetooth constants,
@@ -472,8 +472,9 @@ struct dualsense_input_report {
 
 enum FLAG0 : uint8_t {
   MOTOR_OR_COMPATIBLE_VIBRATION = 0x01,
-  LED_OR_HAPTIC_SELECT = 0x02,
-  LED_BLINK = 0x04
+  USE_RUMBLE_NOT_HAPTICS = 0x02,
+  RIGHT_TRIGGER_EFFECT = 0x04,
+  LEFT_TRIGGER_EFFECT = 0x08,
 };
 
 enum FLAG1 : uint8_t {
@@ -503,7 +504,11 @@ struct dualsense_output_report_common {
   uint8_t mute_button_led;
 
   uint8_t power_save_control;
-  uint8_t reserved2[28];
+  uint8_t right_trigger_effect_type;
+  uint8_t right_trigger_effect[10];
+  uint8_t left_trigger_effect_type;
+  uint8_t left_trigger_effect[10];
+  uint8_t reserved2[6];
 
   /* LEDs and lightbar */
   uint8_t valid_flag2;

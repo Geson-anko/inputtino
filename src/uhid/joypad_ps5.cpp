@@ -168,6 +168,39 @@ static void on_uhid_event(std::shared_ptr<PS5JoypadState> state, uhid_event ev, 
       }
     }
 
+    /**
+     * Trigger effects
+     */
+    bool right_trigger = report.valid_flag0 & uhid::RIGHT_TRIGGER_EFFECT;
+    bool left_trigger = report.valid_flag0 & uhid::LEFT_TRIGGER_EFFECT;
+    if ((right_trigger || left_trigger) && state->on_trigger_effect) {
+      auto left_array_start = std::begin(report.left_trigger_effect);
+      auto left_array_end = std::end(report.left_trigger_effect);
+      auto right_array_start = std::begin(report.right_trigger_effect);
+      auto right_array_end = std::end(report.right_trigger_effect);
+      // We have to cache these values because these flags will be set as long as the effect is active
+      uint32_t left_trigger_hash = std::accumulate(left_array_start, left_array_end, 0ul);
+      uint32_t right_trigger_hash = std::accumulate(right_array_start, right_array_end, 0ul);
+      if ((left_trigger && state->last_left_trigger_event != left_trigger_hash) ||
+          (right_trigger && state->last_right_trigger_event != right_trigger_hash)) {
+        // First, update the cache
+        if (left_trigger)
+          state->last_left_trigger_event = left_trigger_hash;
+        if (right_trigger)
+          state->last_right_trigger_event = right_trigger_hash;
+
+        // Then, trigger the event
+        uint8_t event_flags = (report.valid_flag0 & uhid::LEFT_TRIGGER_EFFECT) |
+                              (report.valid_flag0 & uhid::RIGHT_TRIGGER_EFFECT);
+        PS5Joypad::TriggerEffect effect = {.event_flags = event_flags,
+                                           .type_left = report.left_trigger_effect_type,
+                                           .type_right = report.right_trigger_effect_type};
+        std::copy(left_array_start, left_array_end, std::begin(effect.left));
+        std::copy(right_array_start, right_array_end, std::begin(effect.right));
+        (*state->on_trigger_effect)(effect);
+      }
+    }
+
     /*
      * LED
      */
@@ -472,9 +505,9 @@ static __le16 to_le_signed(float original, float value) {
 void PS5Joypad::set_motion(PS5Joypad::MOTION_TYPE type, float x, float y, float z) {
   switch (type) {
   case ACCELERATION: {
-    this->_state->current_state.accel[0] = to_le_signed(x, (x * uhid::SDL_STANDARD_GRAVITY * 100));
-    this->_state->current_state.accel[1] = to_le_signed(y, (y * uhid::SDL_STANDARD_GRAVITY * 100));
-    this->_state->current_state.accel[2] = to_le_signed(z, (z * uhid::SDL_STANDARD_GRAVITY * 100));
+    this->_state->current_state.accel[0] = to_le_signed(x, (x * uhid::SDL_STANDARD_GRAVITY_CONST * 100));
+    this->_state->current_state.accel[1] = to_le_signed(y, (y * uhid::SDL_STANDARD_GRAVITY_CONST * 100));
+    this->_state->current_state.accel[2] = to_le_signed(z, (z * uhid::SDL_STANDARD_GRAVITY_CONST * 100));
 
     send_report(*this->_state);
     break;
@@ -502,6 +535,10 @@ void PS5Joypad::set_battery(PS5Joypad::BATTERY_STATE state, int percentage) {
 
 void PS5Joypad::set_on_led(const std::function<void(int, int, int)> &callback) {
   this->_state->on_led = callback;
+}
+
+void PS5Joypad::set_on_trigger_effect(const std::function<void(const TriggerEffect &)> &callback) {
+  this->_state->on_trigger_effect = callback;
 }
 
 void PS5Joypad::place_finger(int finger_nr, uint16_t x, uint16_t y) {

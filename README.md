@@ -1,6 +1,8 @@
 # inputtino
 
 An easy to use virtual input library for Linux built on top of `uinput`, `evdev` and `uhid`.  
+Currently in use by [Wolf](https://github.com/games-on-whales/wolf), [Sunshine](https://github.com/LizardByte/Sunshine) and [Moonshine](https://github.com/hgaiser/moonshine)
+
 Supports:
 
 - Keyboard
@@ -11,12 +13,14 @@ Supports:
 - Joypad
     - Correctly emulates Xbox, PS5 or Nintendo joypads
     - Supports callbacks on Rumble events
-    - Gyro, Acceleration and Touchpad support (using UHID)
+    - Gyro, Acceleration, Touchpad, Adaptive triggers, LED and battery status fully supported when creating a virtual DualSense joypad (with full support without Steam Input for games that are compatible with DualSense)
 
 Interested in how the joypad works under the hood? Checkout these blog posts:
 - [When uinput Isn’t Enough: Virtualizing a DualSense controller](https://abeltra.me/blog/inputtino-uhid-1/)
 - [Creating a Virtual DualSense Controller via UHID](https://abeltra.me/blog/inputtino-uhid-2/)
 - [Beyond USB: Improving Virtual Controller Support in Linux Games](https://abeltra.me/blog/inputtino-uhid-3/)
+
+A special thanks goes to [@hgaiser](https://github.com/hgaiser) for all the help in yak shaving the DualSense implementation.
 
 ## Include in a C++ project
 
@@ -31,7 +35,7 @@ FetchContent_MakeAvailable(inputtino)
 target_link_libraries(<your_project_name> PUBLIC inputtino::libinputtino)
 ```
 
-## Example usage
+### Example usage
 
 ```c++
 #include <inputtino/input.hpp>

@@ -8,7 +8,7 @@ use crate::sys::{
     inputtino_joypad_ps5_set_on_led, inputtino_joypad_ps5_set_on_rumble,
     inputtino_joypad_ps5_set_pressed_buttons, inputtino_joypad_ps5_set_stick,
     inputtino_joypad_ps5_set_triggers, inputtino_joypad_ps5_set_motion,
-    inputtino_joypad_ps5_set_battery,
+    inputtino_joypad_ps5_set_battery, inputtino_joypad_ps5_set_on_trigger_effect,
 };
 use crate::{BatteryState, InputtinoError, JoypadMotionType, JoypadStickPosition};
 
@@ -17,6 +17,7 @@ pub struct PS5Joypad {
     joypad: *mut crate::sys::InputtinoPS5Joypad,
     on_rumble_fn: *mut c_void,
     on_led_fn: *mut c_void,
+    on_trigger_effect_fn: *mut c_void,
 }
 
 impl PS5Joypad {
@@ -44,6 +45,7 @@ impl PS5Joypad {
             joypad,
             on_rumble_fn: std::ptr::null_mut(),
             on_led_fn: std::ptr::null_mut(),
+            on_trigger_effect_fn: std::ptr::null_mut(),
         })
     }
 
@@ -130,6 +132,29 @@ impl PS5Joypad {
         }
     }
 
+    /// Sets a callback to be called when this device receives a trigger effect event.
+    ///
+    /// # Examples
+    ///
+    /// ```ignore
+    /// device.set_on_trigger_effect(|trigger_event_flags, type_left, type_right, left_effect, right_effect| {
+    ///     println!(
+    ///         "Received trigger effect event: trigger_event_flags: {trigger_event_flags}, type_left: {type_left}, type_right: {type_right}, \
+    ///         left_effect: {:?}, right_effect: {:?}",
+    ///         left_effect, right_effect
+    ///     );
+    /// });
+    /// ```
+    pub fn set_on_trigger_effect(&mut self, on_trigger_effect_fn: impl FnMut(u8, u8, u8, &[u8], &[u8]) + 'static) {
+        let on_trigger_effect_fn = Box::new(TriggerEffectFunction {
+            on_trigger_effect_fn: Box::new(on_trigger_effect_fn),
+        });
+        self.on_trigger_effect_fn = Box::into_raw(on_trigger_effect_fn) as *mut c_void;
+        unsafe {
+            inputtino_joypad_ps5_set_on_trigger_effect(self.joypad, Some(on_trigger_effect_c_fn), self.on_trigger_effect_fn);
+        }
+    }
+
     pub fn get_nodes(&self) -> Result<Vec<PathBuf>, InputtinoError> {
         get_nodes(inputtino_joypad_ps5_get_nodes, self.joypad)
     }
@@ -205,10 +230,6 @@ struct RumbleFunction {
     on_rumble_fn: Box<dyn FnMut(i32, i32)>,
 }
 
-struct LedFunction {
-    on_led_fn: Box<dyn FnMut(i32, i32, i32)>,
-}
-
 unsafe extern "C" fn on_rumble_c_fn(
     left_motor: c_int,
     right_motor: c_int,
@@ -216,6 +237,10 @@ unsafe extern "C" fn on_rumble_c_fn(
 ) {
     let on_rumble_fn = user_data as *mut RumbleFunction;
     ((*on_rumble_fn).on_rumble_fn)(left_motor, right_motor);
+}
+
+struct LedFunction {
+    on_led_fn: Box<dyn FnMut(i32, i32, i32)>,
 }
 
 unsafe extern "C" fn on_led_c_fn(
@@ -226,6 +251,30 @@ unsafe extern "C" fn on_led_c_fn(
 ) {
     let on_led_fn = user_data as *mut LedFunction;
     ((*on_led_fn).on_led_fn)(r, g, b);
+}
+
+struct TriggerEffectFunction {
+    on_trigger_effect_fn: Box<dyn FnMut(u8, u8, u8, &[u8], &[u8])>,
+}
+
+unsafe extern "C" fn on_trigger_effect_c_fn(
+    trigger_event_flags: u8,
+    type_left: u8,
+    type_right: u8,
+    left: *const u8,
+    right: *const u8,
+    user_data: *mut ::core::ffi::c_void,
+) {
+    let on_trigger_effect_fn = user_data as *mut TriggerEffectFunction;
+    let left_effect = std::slice::from_raw_parts(left, 10);
+    let right_effect = std::slice::from_raw_parts(right, 10);
+    ((*on_trigger_effect_fn).on_trigger_effect_fn)(
+        trigger_event_flags,
+        type_left,
+        type_right,
+        left_effect,
+        right_effect,
+    );
 }
 
 unsafe impl Send for PS5Joypad {}
