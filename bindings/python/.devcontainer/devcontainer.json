@@ -20,7 +20,7 @@
         "ms-vscode.cpptools-extension-pack"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/workspace/.venv/bin/python"
+        "python.defaultInterpreterPath": ".venv/bin/python"
       }
     }
   },
